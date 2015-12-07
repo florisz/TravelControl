@@ -1,0 +1,39 @@
+﻿<Window x:Class="TravelControl.MapClient.MapClientWindow"
+        xmlns:local="clr-namespace:TravelControl.MapClient"
+        mc:Ignorable="d"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:m="clr-namespace:Microsoft.Maps.MapControl.WPF;assembly=Microsoft.Maps.MapControl.WPF"
+        Title="TravelControl VehicleCount" Height="800" Width="900">
+
+        <Window.Resources>
+            <DataTemplate x:Key="VehiclesPerLocationTemplate">
+                <m:Pushpin m:MapLayer.Position="{Binding Location}" />
+            </DataTemplate>
+        </Window.Resources>
+
+        <Grid x:Name="LayoutRoot" Background="White" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+
+            <m:Map x:Name="myMap"
+               Grid.Row="0" Grid.RowSpan="2"
+               Center="52.1, 5.0"
+               ZoomLevel="8"
+               CredentialsProvider="AqAPvLTdnaZtffDKSCMPT-5qyqt6LmZ5WZdoqgOzUxrOS8yBh7nowAOWSh5-7Xp8">
+                <m:MapItemsControl Name="VehiclesPerLocationItemsControl" ItemsSource="{Binding VehiclesPerLocation}" ItemTemplate="{StaticResource VehiclesPerLocationTemplate}" />
+            </m:Map>
+
+            <Popup  Height="Auto" Width="200" Name="stopLocationPopup" StaysOpen="True" AllowsTransparency="True" IsOpen="False">
+                <Border BorderThickness="2" Background="Yellow" >
+                    <StackPanel Name="stopLocationPanel" Margin="2"  Orientation="Horizontal">
+                        <TextBlock Name="stopLocationPopupText" Text="Location:"/>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </Grid>
+    </Window>
