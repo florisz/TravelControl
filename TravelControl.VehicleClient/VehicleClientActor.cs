@@ -1,6 +1,6 @@
 ﻿using Akka.Actor;
 using System;
-using TravelControl.GlobalConstants;
+using TravelControl.Constants;
 using TravelControl.Messages;
 
 namespace TravelControl.VehicleClient
@@ -21,7 +21,19 @@ namespace TravelControl.VehicleClient
 
             Console.WriteLine("Connecting...");
 
-            _server.Tell(message);
+            var task = _server.Ask(message, TimeSpan.FromSeconds(10));
+            task.Wait();
+            var result = task.Result;
+            if (result.GetType() == typeof (VehicleClientConnectResponse))
+            {
+                _connected = true;
+                Console.WriteLine("Connected!");
+            }
+            else if (result.GetType() == typeof(Failure))
+            {
+                var failure = result as Failure;
+                Console.WriteLine($"Failure in connecting: {failure.Exception.Message}\nStacktrace:\n{failure.Exception.StackTrace}");
+            }
         }
 
         public void Handle(VehicleClientConnectResponse message)
@@ -30,8 +42,6 @@ namespace TravelControl.VehicleClient
             {
                 throw message.ServerException;
             }
-            _connected = true;
-            Console.WriteLine("Connected!");
         }
 
         public void Handle(VehicleStatus message)

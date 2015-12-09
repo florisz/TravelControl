@@ -64,7 +64,7 @@ namespace TravelControl.VehicleClient
                 {
                     Console.WriteLine("Vehicle arrived at {0}", departure.PlannedArrivalTime);
 
-                    SendClientMessage(departure, VehicleStatusEnum.Stop, departure.PlannedArrivalTime);
+                    SendClientMessage(departure, VehicleStatusEnum.Arrive, departure.PlannedArrivalTime);
 
                     _vehicleOnStation = true;
                     changes = true;
@@ -73,7 +73,7 @@ namespace TravelControl.VehicleClient
                 {
                     Console.WriteLine("Vehicle departed at {0}", departure.PlannedDepartureTime.Value);
 
-                    SendClientMessage(departure, VehicleStatusEnum.Start, departure.PlannedDepartureTime.Value);
+                    SendClientMessage(departure, VehicleStatusEnum.Depart, departure.PlannedDepartureTime.Value);
 
                     _vehicleOnStation = false;
                     _index++;
@@ -88,7 +88,7 @@ namespace TravelControl.VehicleClient
             {
                 Location = departure.FromLocation.LocationId,
                 Vehicle = VehicleId.ToString(),
-                RouteId = _route.Id,
+                Route = _route,
                 Status = status,
                 DateTime = MakeDate(TimeProvider.Now, time),
             });

@@ -1,7 +1,7 @@
 ﻿using Akka.Actor;
 using Akka.Configuration;
 using System.Collections.Generic;
-using TravelControl.GlobalConstants;
+using TravelControl.Constants;
 using TravelControl.MapClient.ViewModels;
 using TravelControl.Messages;
 

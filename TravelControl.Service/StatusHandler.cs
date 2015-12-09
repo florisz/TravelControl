@@ -2,6 +2,7 @@
 using Akka.Event;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TravelControl.Domain;
 using TravelControl.Messages;
 
@@ -15,61 +16,72 @@ namespace TravelControlService
 
     public class StatusHandler : IStatusHandler
     {
-        private readonly Dictionary<string, VehiclesPerLocation> _vehiclesPerLocation = new Dictionary<string, VehiclesPerLocation>();
-        private readonly Dictionary<string, string> _vehicleOnLocation = new Dictionary<string, string>();
-         
-        public StatusHandler(IStopLocations stopLocations)
+        private readonly Dictionary<string, VehiclesPerLocation> _vehiclesPerLocation;
+        private readonly Dictionary<string, string> _vehicleIsOnLocation;
+        private readonly IRoutes _routes;
+
+        public StatusHandler(IStopLocations stopLocations, IRoutes routes)
         {
+            _routes = routes;
+            _vehicleIsOnLocation = new Dictionary<string, string>();
+            _vehiclesPerLocation = new Dictionary<string, VehiclesPerLocation>();
             foreach (var location in stopLocations.All.Values)
             {
                 _vehiclesPerLocation.Add(location.LocationId, new VehiclesPerLocation { StopLocation = location, Count = 0 });
             }
+    }
 
-        }
-
-        public void Handle(VehicleStatus vehicleStatus, Dictionary<Guid, IActorRef> mapClients, ILoggingAdapter logger)
+    public void Handle(VehicleStatus vehicleStatus, Dictionary<Guid, IActorRef> mapClients, ILoggingAdapter logger)
         {
+            var vehiclePerLocationNew = _vehiclesPerLocation[vehicleStatus.Location];
             switch (vehicleStatus.Status)
             {
                 case VehicleStatusEnum.StartRoute:
-                    {
-                        _vehicleOnLocation[vehicleStatus.Vehicle] = vehicleStatus.Location;
-                        var vehiclePerLocation = _vehiclesPerLocation[vehicleStatus.Location];
-                        vehiclePerLocation.Count++;
+                    // keep track of the location of the vehicle
+                    _vehicleIsOnLocation[vehicleStatus.Vehicle] = vehicleStatus.Location;
 
-                        // send status to all attached mapClients
-                        foreach (var client in mapClients.Values)
-                        {
-                            client.Tell(new LocationStatusMessage { Location = vehiclePerLocation.StopLocation.LocationId, VehicleCount = vehiclePerLocation.Count });
-                        }
+                    // increment the number of vehicles on this location
+                    vehiclePerLocationNew.Count++;
+
+                    SaveRoute(vehicleStatus.Route, VehicleStatusEnum.StartRoute);
+
+                    // send new status to all attached mapClients
+                    foreach (var client in mapClients.Values)
+                    {
+                        client.Tell(new LocationStatusMessage { Location = vehiclePerLocationNew.StopLocation.LocationId, VehicleCount = vehiclePerLocationNew.Count });
                     }
                     break;
                 case VehicleStatusEnum.EndRoute:
+                    // the vehicle can be removed from the current list of vehicles
+                    _vehicleIsOnLocation.Remove(vehicleStatus.Vehicle);
+
+                    // decrement the number of vehicles on this location
+                    vehiclePerLocationNew.Count--;
+
+                    SaveRoute(vehicleStatus.Route, VehicleStatusEnum.EndRoute);
+
+                    // send status to all attached mapClients
+                    foreach (var client in mapClients.Values)
                     {
-                        _vehicleOnLocation.Remove(vehicleStatus.Vehicle);
-
-                        var vehiclePerLocation = _vehiclesPerLocation[vehicleStatus.Location];
-                        vehiclePerLocation.Count--;
-
-                        // send status to all attached mapClients
-                        foreach (var client in mapClients.Values)
-                        {
-                            client.Tell(new LocationStatusMessage { Location = vehiclePerLocation.StopLocation.LocationId, VehicleCount = vehiclePerLocation.Count });
-                        }
+                        client.Tell(new LocationStatusMessage { Location = vehiclePerLocationNew.StopLocation.LocationId, VehicleCount = vehiclePerLocationNew.Count });
                     }
                     break;
-                case VehicleStatusEnum.Stop:
-                    // decrement counter on old location
-                    var currentLocation = _vehicleOnLocation[vehicleStatus.Vehicle];
+                case VehicleStatusEnum.Depart:
+                    SaveRoute(vehicleStatus.Route, VehicleStatusEnum.Depart, vehicleStatus.DateTime, vehicleStatus.Location);
+                    break;
+                case VehicleStatusEnum.Arrive:
+                    // decrement the number of vehicles on the old location
+                    var currentLocation = _vehicleIsOnLocation[vehicleStatus.Vehicle];
                     var vehiclePerLocationOld = _vehiclesPerLocation[currentLocation];
                     vehiclePerLocationOld.Count--;
 
                     // move vehicle to new location
-                    _vehicleOnLocation[vehicleStatus.Vehicle] = vehicleStatus.Location;
+                    _vehicleIsOnLocation[vehicleStatus.Vehicle] = vehicleStatus.Location;
 
-                    // increment counter on new location
-                    var vehiclePerLocationNew = _vehiclesPerLocation[vehicleStatus.Location];
+                    // increment the number of vehicles on the new location
                     vehiclePerLocationNew.Count++;
+
+                    SaveRoute(vehicleStatus.Route, VehicleStatusEnum.Arrive, vehicleStatus.DateTime, vehicleStatus.Location);
 
                     // send status to all attached mapClients
                     foreach (var client in mapClients.Values)
@@ -79,6 +91,44 @@ namespace TravelControlService
                     }
                     break;
             }
+        }
+
+        private void SaveRoute(Route route, VehicleStatusEnum status)
+        {
+            if (status != VehicleStatusEnum.StartRoute && status != VehicleStatusEnum.EndRoute)
+                return;
+            if (status == VehicleStatusEnum.StartRoute)
+            {
+                route.Started = true;
+                route.Finished = false;
+            }
+            else
+            {
+                route.Finished = true;
+            }
+            _routes.Save(route);
+        }
+
+        private void SaveRoute(Route route, VehicleStatusEnum status, DateTime dateTime, string locationId)
+        {
+            if (status != VehicleStatusEnum.Depart && status != VehicleStatusEnum.Arrive)
+                return;
+            var departure = route.Departures.FirstOrDefault(d => d.FromLocation.LocationId == locationId);
+            if (departure == null)
+                // actually this should throw an exception but for demo purposes this suffices
+                return;
+
+            var time = new TimeSpan(dateTime.Hour, dateTime.Minute, dateTime.Second);
+            if (status == VehicleStatusEnum.Depart)
+            {
+                departure.ActualDepartureTime = time;
+            }
+            else // Arrive
+            {
+                departure.ActualArrivalTime = time;
+            }
+
+            _routes.Save(route);
         }
     }
 }

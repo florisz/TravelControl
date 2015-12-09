@@ -3,7 +3,7 @@ using Microsoft.Practices.Unity;
 using System;
 using System.Collections.Generic;
 using TravelControl.Common;
-using TravelControl.GlobalConstants;
+using TravelControl.Constants;
 using TravelControl.MapClient.ViewModels;
 using TravelControl.Messages;
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using TravelControl.Domain;
 
 namespace TravelControl.Messages
 {
@@ -6,8 +7,8 @@ namespace TravelControl.Messages
     {
         StartRoute = 1,
         EndRoute = 2,
-        Start = 3,
-        Stop = 4
+        Depart = 3,
+        Arrive = 4
     }
 
     public class VehicleStatus
@@ -17,7 +18,7 @@ namespace TravelControl.Messages
         public VehicleStatusEnum Status { get; set; }
         public DateTime DateTime { get; set; }
         public string Location { get; set; }
-        public string RouteId { get; set; }
+        public Route Route { get; set; }
     }
 
     public class LocationStatusMessage

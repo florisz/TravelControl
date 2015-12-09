@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using COM = TravelControl.Common;
 using TravelControl.Domain;
-using TravelControl.GlobalConstants;
+using TravelControl.Constants;
 using TravelControl.Messages;
 using Microsoft.Practices.Unity;
 using static System.Console;
@@ -90,6 +90,7 @@ namespace TravelControl.VehicleClient
                         {
                             route.Finished = false;
                             route.Started = false;
+                            route.Departures.ForEach(d => d.ActualArrivalTime = d.ActualDepartureTime = null );
                             Routes.Save(route);
                         }
                     }

@@ -1,4 +1,4 @@
-﻿namespace TravelControl.GlobalConstants
+﻿namespace TravelControl.Constants
 {
     public static class GlobalConstant
     {

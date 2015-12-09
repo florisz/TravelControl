@@ -31,14 +31,13 @@ namespace TravelControlService
 
         public ServerActor()
         {
-            ServiceLocator.Instance.BuildUp(this.GetType(), this);
+            ServiceLocator.Instance.BuildUp(GetType(), this);
         }
 
         public void Handle(VehicleClientConnectRequest message)
         {
-            var logger = Logging.GetLogger(Context);
+            var logger = Context.GetLogger();
 
-            Exception exception = null;
             try {
                 logger.Debug("Vehicle client {0} has connected", message.Id);
 
@@ -49,21 +48,22 @@ namespace TravelControlService
             }
             catch (Exception ex)
             {
-                exception = ex;
+                Sender.Tell(new Failure {Exception = ex}, Self);
+                return;
             }
 
             Sender.Tell(new VehicleClientConnectResponse
             {
                 Id = message.Id,
-                RequestOk = (exception == null),
-                ServerException = exception
+                RequestOk = true,
+                ServerException = null
             }, Self);
         }
 
         public void Handle(VehicleClientDisconnect message)
         {
-            var logger = Logging.GetLogger(Context);
-            logger.Debug("Vehicle client {0} has disconnected");
+            var logger = Context.GetLogger();
+            logger.Debug("Vehicle client has disconnected");
 
             if (_vehicleClients.ContainsKey(message.Id))
             {
@@ -73,7 +73,7 @@ namespace TravelControlService
 
         public void Handle(TimeTableClientConnect message)
         {
-            var logger = Logging.GetLogger(Context);
+            var logger = Context.GetLogger();
             logger.Debug("TimeTable client {0} has connected", message.Id);
 
             if (!_timetableClients.ContainsKey(message.Id))
@@ -85,8 +85,8 @@ namespace TravelControlService
 
         public void Handle(TimeTableClientDisconnect message)
         {
-            var logger = Logging.GetLogger(Context);
-            logger.Debug("TimeTable client {0} has disconnected");
+            var logger = Context.GetLogger();
+            logger.Debug("TimeTable client has disconnected");
 
             if (_timetableClients.ContainsKey(message.Id))
             {
@@ -96,7 +96,7 @@ namespace TravelControlService
 
         public void Handle(MapClientConnectRequest message)
         {
-            var logger = Logging.GetLogger(Context);
+            var logger = Context.GetLogger();
 
             Exception exception = null;
             try
@@ -123,8 +123,8 @@ namespace TravelControlService
 
         public void Handle(MapClientDisconnect message)
         {
-            var logger = Logging.GetLogger(Context);
-            logger.Debug("Map client {0} has disconnected");
+            var logger = Context.GetLogger();
+            logger.Debug("Map client has disconnected");
 
             if (_mapClients.ContainsKey(message.Id))
             {
@@ -134,7 +134,7 @@ namespace TravelControlService
 
         public void Handle(VehicleStatus message)
         {
-            var logger = Logging.GetLogger(Context);
+            var logger = Context.GetLogger();
             logger.Debug("Client send status: vehicle={0}, location={1}, status={2}, time={3}", 
                 message.Vehicle, 
                 message.Location, 

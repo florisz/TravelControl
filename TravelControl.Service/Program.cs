@@ -72,7 +72,7 @@ akka {
 ");
             ServiceLocator.Instance.RegisterTypes(container =>
                 {
-                    container.RegisterType<IStorage, StorageInMemory>(new PerResolveLifetimeManager());
+                    container.RegisterType<IStorage, StorageInCouchDb>(new PerResolveLifetimeManager());
                     container.RegisterType<IStopLocations, StopLocations>(new ContainerControlledLifetimeManager());
                     container.RegisterType<IConnections, Connections>(new ContainerControlledLifetimeManager());
                     container.RegisterType<IRoutes, Routes>(new ContainerControlledLifetimeManager());
@@ -84,6 +84,12 @@ akka {
 
             var logger = Logging.GetLogger(_mySystem, this);
             logger.Debug("Windows service TravelControl Central Service is starting...");
+            
+            // preread all static data for connections and stoplocations
+            var connections = ServiceLocator.Instance.Resolve<IConnections>();
+            var allConnections = connections.All;
+
+            logger.Debug("Windows service TravelControl static data initialised...");
 
             _myActor = _mySystem.ActorOf<ServerActor>("TravelControl");
 
