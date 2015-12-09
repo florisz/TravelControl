@@ -5,9 +5,10 @@ namespace TravelControl.Domain
 {
     public interface IRoutes
     {
-        Route Get(string Id);
-        IEnumerable<Route> Get(TimeSpan DepartureTime);
-        IEnumerable<Route> Get(TimeSpan DepartureTimeFrom, TimeSpan DepartureTimeTo);
-        void Save(Route Route);
+        Route Get(string id);
+        IEnumerable<Route> Get(TimeSpan departureTime);
+        IEnumerable<Route> Get(TimeSpan departureTimeFrom, TimeSpan departureTimeTo);
+        void Save(Route route);
+        int GetActiveRouteCount();
     }
 }

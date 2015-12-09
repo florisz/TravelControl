@@ -839,6 +839,12 @@ namespace TravelControl.Storage
 
             return route._rev;
         }
+
+        public int GetActiveRouteCount()
+        {
+            return AllRoutes.Where(r => r.Started && !r.Finished).Count();
+        }
+
         #endregion
 
         #region private shizzle

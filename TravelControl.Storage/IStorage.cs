@@ -16,6 +16,6 @@ namespace TravelControl.Storage
         IEnumerable<RouteEntity> GetRoutes(string DepartureTime);
         IEnumerable<RouteEntity> GetRoutes(string DepartureTimeFrom, string DepartureTimeTo);
         string SaveRoute(RouteEntity Route);
-
+        int GetActiveRouteCount();
     }
 }

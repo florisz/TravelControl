@@ -53,10 +53,9 @@ namespace TravelControl.VehicleClient
                         var vehicleId = Guid.NewGuid();
                         var simulator = new VehicleSimulator(vehicleClient, route, vehicleId);
 
-                        runningVehicles.Add(vehicleId, simulator);
+                        simulator.StartRoute();
 
-                        route.Started = true;
-                        Routes.Save(route);
+                        runningVehicles.Add(vehicleId, simulator);
                     }
                 }
 
@@ -65,6 +64,7 @@ namespace TravelControl.VehicleClient
                     WriteLine("Number of active vehicles={0}", runningVehicles.Count);
                     if (vehicleSimulator.SimulateRoute())
                     {
+                        vehicleSimulator.EndRoute();
                         runningVehicles.Remove(vehicleSimulator.VehicleId);
                         WriteLine("Route is ready");
                     }

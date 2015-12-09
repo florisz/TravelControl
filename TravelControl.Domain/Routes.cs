@@ -39,6 +39,11 @@ namespace TravelControl.Domain
             route._rev = revision;
         }
 
+        public int GetActiveRouteCount()
+        {
+            return _storage.GetActiveRouteCount();
+        }
+
         private IEnumerable<Route> ConvertRouteEntityList(IEnumerable<RouteEntity> routeEntities)
         {
             List<Route> routeList = new List<Route>();

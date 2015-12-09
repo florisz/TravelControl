@@ -16,7 +16,7 @@ namespace TravelControl.MapClient
         {
             ServiceLocator.Instance.RegisterTypes(container =>
             {
-                container.RegisterType<IStorage, StorageInMemory>(new PerResolveLifetimeManager());
+                container.RegisterType<IStorage, StorageInCouchDb>(new PerResolveLifetimeManager());
                 container.RegisterType<IStopLocations, StopLocations>(new ContainerControlledLifetimeManager());
                 container.RegisterType<IConnections, Connections>(new ContainerControlledLifetimeManager());
                 container.RegisterType<IRoutes, Routes>(new ContainerControlledLifetimeManager());

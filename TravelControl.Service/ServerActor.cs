@@ -138,7 +138,7 @@ namespace TravelControlService
             logger.Debug("Client send status: vehicle={0}, location={1}, status={2}, time={3}", 
                 message.Vehicle, 
                 message.Location, 
-                message.Status == (VehicleStatusEnum.Start) ? "Start" : "Stop", 
+                message.Status, 
                 message.DateTime.ToShortTimeString());
 
             StatusHandler.Handle(message, _mapClients, logger);

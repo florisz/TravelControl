@@ -13,7 +13,7 @@ namespace TravelControl.VehicleClient
     {
         private readonly ActorSelection _server = Context.ActorSelection(GlobalConstant.TravelControlServerUrl);
         private Guid _id;
-        private bool _connected = false;
+        private bool _connected;
 
         public void Handle(VehicleClientConnectRequest message)
         {
@@ -36,6 +36,7 @@ namespace TravelControl.VehicleClient
 
         public void Handle(VehicleStatus message)
         {
+            message.Id = _id;
             _server.Tell(message);
         }
 

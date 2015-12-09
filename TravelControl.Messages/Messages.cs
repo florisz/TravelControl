@@ -4,16 +4,20 @@ namespace TravelControl.Messages
 {
     public enum VehicleStatusEnum
     {
-        Start,
-        Stop
+        StartRoute = 1,
+        EndRoute = 2,
+        Start = 3,
+        Stop = 4
     }
 
     public class VehicleStatus
     {
+        public Guid Id { get; set; }
         public string Vehicle { get; set; }
         public VehicleStatusEnum Status { get; set; }
         public DateTime DateTime { get; set; }
         public string Location { get; set; }
+        public string RouteId { get; set; }
     }
 
     public class LocationStatusMessage
@@ -21,7 +25,7 @@ namespace TravelControl.Messages
         public string Location { get; set; }
         public int VehicleCount { get; set; }
     }
-
+    
     public class VehicleClientConnectRequest
     {
         public Guid Id { get; set; }

@@ -24,6 +24,8 @@ namespace TravelControl.MapClient
         public IStopLocations StopLocations { get; set; }
         [Dependency]
         public IConnections Connections{ get; set; }
+        [Dependency]
+        public IRoutes Routes { get; set; }
 
         private List<VehiclesPerLocation> _listVehiclesPerLocation;
 
@@ -99,13 +101,16 @@ namespace TravelControl.MapClient
             var viewModelControl = FindVisualChildByName<MapItemsControl>(LayoutRoot, "VehiclesPerLocationItemsControl");
             if (viewModelControl != null)
             {
-                var vehiclesPerLocation = new ObservableCollection< VehiclesPerLocation>();
+                var vehiclesPerLocation = new ObservableCollection<VehiclesPerLocation>();
                 foreach (var loc in _listVehiclesPerLocation)
                 {
                     vehiclesPerLocation.Add(loc);
                 }
                 viewModelControl.ItemsSource = vehiclesPerLocation;
             }
+
+            var vehicleCount = Routes.GetActiveRouteCount();
+            ActiveVehicles.Content = vehicleCount + " vehicles";
         }
 
         private void ellipse_MouseLeave(object sender, MouseEventArgs e)

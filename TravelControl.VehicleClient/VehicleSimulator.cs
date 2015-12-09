@@ -3,7 +3,6 @@ using System;
 using TravelControl.Domain;
 using TravelControl.Messages;
 using COM=TravelControl.Common;
-using System.Threading;
 using Microsoft.Practices.Unity;
 
 namespace TravelControl.VehicleClient
@@ -12,6 +11,8 @@ namespace TravelControl.VehicleClient
     {
         [Dependency]
         public COM.ITimeProvider TimeProvider { get; set; }
+        [Dependency]
+        public IRoutes Routes { get; set; }
 
         public Guid VehicleId { get; private set; }
         private readonly Route _route;
@@ -27,6 +28,40 @@ namespace TravelControl.VehicleClient
             VehicleId = vehicleId;
             _index = 0;
             _vehicleOnStation = false;
+        }
+
+        public void StartRoute()
+        {
+            _route.Started = true;
+            Routes.Save(_route);
+
+            var departure = _route.Departures[0];
+            var startTime = MakeDate(TimeProvider.Now, departure.PlannedArrivalTime);
+            _vehicleClient.Tell(new VehicleStatus
+            {
+                Vehicle = VehicleId.ToString(),
+                DateTime = startTime,
+                Location = departure.FromLocation.LocationId,
+                Status = VehicleStatusEnum.StartRoute,
+                RouteId = _route.Id
+            });
+        }
+
+        public void EndRoute()
+        {
+            _route.Finished = true;
+            Routes.Save(_route);
+
+            var departure = _route.Departures[_route.Departures.Count - 1];
+            var stopTime = MakeDate(TimeProvider.Now, departure.PlannedArrivalTime);
+            _vehicleClient.Tell(new VehicleStatus
+            {
+                Vehicle = VehicleId.ToString(),
+                DateTime = stopTime,
+                Location = departure.FromLocation.LocationId,
+                Status = VehicleStatusEnum.EndRoute,
+                RouteId = _route.Id
+            });
         }
 
         public bool SimulateRoute()
@@ -45,7 +80,8 @@ namespace TravelControl.VehicleClient
                         Vehicle = VehicleId.ToString(),
                         DateTime = arrivalTime,
                         Location = departure.FromLocation.LocationId,
-                        Status = VehicleStatusEnum.Stop
+                        Status = VehicleStatusEnum.Stop,
+                        RouteId = _route.Id
                     });
                     _vehicleOnStation = true;
                     changes = true;
@@ -59,7 +95,8 @@ namespace TravelControl.VehicleClient
                         Vehicle = VehicleId.ToString(),
                         DateTime = departureTime,
                         Location = departure.FromLocation.LocationId,
-                        Status = VehicleStatusEnum.Start
+                        Status = VehicleStatusEnum.Start,
+                        RouteId = _route.Id
                     });
                     _vehicleOnStation = false;
                     _index++;

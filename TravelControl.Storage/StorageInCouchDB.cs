@@ -73,6 +73,12 @@ namespace TravelControl.Storage
 
             return response.Rev;
         }
+
+        public int GetActiveRouteCount()
+        {
+            return GetValue("Routes", "Active");
+        }
+
         #endregion
 
         #region Private shizzle
@@ -102,6 +108,15 @@ namespace TravelControl.Storage
             }
 
             return list;
+        }
+
+        private int GetValue(string viewId, string viewName)
+        {
+            var client = new MyCouchClient(DATABASE_URI, "travelcontrol");
+            var request = new QueryViewRequest(viewId, viewName);
+            var response = client.Views.QueryAsync(request).Result;
+
+            return response.RowCount == 0? 0 : int.Parse(response.Rows[0].Value);
         }
 
         public static string Serialize<T>(T obj)
