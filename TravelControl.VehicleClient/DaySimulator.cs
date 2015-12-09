@@ -25,7 +25,7 @@ namespace TravelControl.VehicleClient
 
         internal void SimulateOneDay(ActorSystem system)
         {
-            // initialise all routes by resetting the isstarted and is isfinished bit
+            // initialise all routes by resetting the isstarted /isfinished bit and resetting the actual time values to null
             InitialiseRoutes();
 
             // set time to the time of the earliest departure time
@@ -61,18 +61,17 @@ namespace TravelControl.VehicleClient
 
                 foreach (var vehicleSimulator in runningVehicles.Values.ToList())
                 {
-                    WriteLine("Number of active vehicles={0}", runningVehicles.Count);
-                    if (vehicleSimulator.SimulateRoute())
-                    {
-                        vehicleSimulator.EndRoute();
-                        runningVehicles.Remove(vehicleSimulator.VehicleId);
-                        WriteLine("Route is ready");
-                    }
+                    vehicleSimulator.SimulateRoute();
+                    if (!vehicleSimulator.HasEnded)
+                        continue;
+                    vehicleSimulator.EndRoute();
+                    runningVehicles.Remove(vehicleSimulator.VehicleId);
                 }
 
                 var timeProvider = TimeProvider as COM.MockTimeProvider;
                 System.Threading.Thread.Sleep(2000);
                 timeProvider?.FastForwardBy(new TimeSpan(0, 1, 0));
+                WriteLine("Number of active vehicles={0}", runningVehicles.Count);
             }
         }
 
