@@ -89,6 +89,10 @@ akka {
             var connections = ServiceLocator.Instance.Resolve<IConnections>();
             var allConnections = connections.All;
 
+            // TESTING
+            //var routes = ServiceLocator.Instance.Resolve<IRoutes>();
+            //var route = routes.Get("4ee46f213b9aabc9e4f99ee909858c97");
+            // END OF TESTING
             logger.Debug("Windows service TravelControl static data initialised...");
 
             _myActor = _mySystem.ActorOf<ServerActor>("TravelControl");

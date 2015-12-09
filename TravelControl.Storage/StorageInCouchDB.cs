@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using MyCouch;
 using MyCouch.Requests;
-using MyCouch.Responses;
 
 namespace TravelControl.Storage
 {
@@ -38,7 +36,10 @@ namespace TravelControl.Storage
 
         public RouteEntity GetRoute(string id)
         {
-            throw new NotImplementedException();
+            var client = new MyCouchClient(DATABASE_URI, "travelcontrol");
+            var response = client.Documents.GetAsync(id).Result;
+
+            return client.Serializer.Deserialize<RouteEntity>(response.Content);
         }
 
         public IEnumerable<RouteEntity> GetRoutes(string departureTimeFrom, string departureTimeTo)
@@ -54,7 +55,6 @@ namespace TravelControl.Storage
             var list = new List<RouteEntity>();
             foreach (var row in viewResponse.Rows)
             {
-                // Do something with your entity.
                 var routeEntity = client.Serializer.Deserialize<RouteEntity>(row.IncludedDoc);
                 list.Add(routeEntity);
             }

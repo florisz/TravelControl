@@ -18,7 +18,7 @@ namespace TravelControl.Messages
         public VehicleStatusEnum Status { get; set; }
         public DateTime DateTime { get; set; }
         public string Location { get; set; }
-        public Route Route { get; set; }
+        public string RouteId { get; set; }
     }
 
     public class LocationStatusMessage

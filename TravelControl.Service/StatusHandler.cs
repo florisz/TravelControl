@@ -43,7 +43,7 @@ namespace TravelControlService
                     // increment the number of vehicles on this location
                     vehiclePerLocationNew.Count++;
 
-                    SaveRoute(vehicleStatus.Route, VehicleStatusEnum.StartRoute);
+                    SaveRoute(vehicleStatus.RouteId, VehicleStatusEnum.StartRoute);
 
                     // send new status to all attached mapClients
                     foreach (var client in mapClients.Values)
@@ -58,7 +58,7 @@ namespace TravelControlService
                     // decrement the number of vehicles on this location
                     vehiclePerLocationNew.Count--;
 
-                    SaveRoute(vehicleStatus.Route, VehicleStatusEnum.EndRoute);
+                    SaveRoute(vehicleStatus.RouteId, VehicleStatusEnum.EndRoute);
 
                     // send status to all attached mapClients
                     foreach (var client in mapClients.Values)
@@ -67,7 +67,7 @@ namespace TravelControlService
                     }
                     break;
                 case VehicleStatusEnum.Depart:
-                    SaveRoute(vehicleStatus.Route, VehicleStatusEnum.Depart, vehicleStatus.DateTime, vehicleStatus.Location);
+                    SaveRoute(vehicleStatus.RouteId, VehicleStatusEnum.Depart, vehicleStatus.DateTime, vehicleStatus.Location);
                     break;
                 case VehicleStatusEnum.Arrive:
                     // decrement the number of vehicles on the old location
@@ -81,7 +81,7 @@ namespace TravelControlService
                     // increment the number of vehicles on the new location
                     vehiclePerLocationNew.Count++;
 
-                    SaveRoute(vehicleStatus.Route, VehicleStatusEnum.Arrive, vehicleStatus.DateTime, vehicleStatus.Location);
+                    SaveRoute(vehicleStatus.RouteId, VehicleStatusEnum.Arrive, vehicleStatus.DateTime, vehicleStatus.Location);
 
                     // send status to all attached mapClients
                     foreach (var client in mapClients.Values)
@@ -93,8 +93,9 @@ namespace TravelControlService
             }
         }
 
-        private void SaveRoute(Route route, VehicleStatusEnum status)
+        private void SaveRoute(string routeId, VehicleStatusEnum status)
         {
+            var route = _routes.Get(routeId);
             if (status != VehicleStatusEnum.StartRoute && status != VehicleStatusEnum.EndRoute)
                 return;
             if (status == VehicleStatusEnum.StartRoute)
@@ -109,14 +110,14 @@ namespace TravelControlService
             _routes.Save(route);
         }
 
-        private void SaveRoute(Route route, VehicleStatusEnum status, DateTime dateTime, string locationId)
+        private void SaveRoute(string routeId, VehicleStatusEnum status, DateTime dateTime, string locationId)
         {
+            var route = _routes.Get(routeId);
             if (status != VehicleStatusEnum.Depart && status != VehicleStatusEnum.Arrive)
                 return;
             var departure = route.Departures.FirstOrDefault(d => d.FromLocation.LocationId == locationId);
             if (departure == null)
-                // actually this should throw an exception but for demo purposes this suffices
-                return;
+                throw new ApplicationException($"Unknown departure in save route for location {locationId} and document {route._id}");
 
             var time = new TimeSpan(dateTime.Hour, dateTime.Minute, dateTime.Second);
             if (status == VehicleStatusEnum.Depart)

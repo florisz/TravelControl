@@ -88,7 +88,7 @@ namespace TravelControl.VehicleClient
             {
                 Location = departure.FromLocation.LocationId,
                 Vehicle = VehicleId.ToString(),
-                Route = _route,
+                RouteId = _route._id,
                 Status = status,
                 DateTime = MakeDate(TimeProvider.Now, time),
             });
