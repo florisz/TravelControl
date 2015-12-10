@@ -15,9 +15,14 @@ namespace TravelControl.Common
         public DateTime UtcNow => DateTime.Now.ToUniversalTime();
 
         /// <summary>
-        /// Returns the local time
+        /// Returns the local datetime
         /// </summary>
         public DateTime LocalDateTime => DateTime.Now.ToLocalTime();
+
+        /// <summary>
+        /// Returns the local time as timespan
+        /// </summary>
+        public TimeSpan CurrentTime => Now.TimeOfDay;
 
         /// <summary>
         /// Returns today according to the implemented time

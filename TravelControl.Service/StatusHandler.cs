@@ -34,6 +34,7 @@ namespace TravelControlService
     public void Handle(VehicleStatus vehicleStatus, Dictionary<Guid, IActorRef> mapClients, ILoggingAdapter logger)
         {
             var vehiclePerLocationNew = _vehiclesPerLocation[vehicleStatus.Location];
+            var currentLocation = vehicleStatus.Location;
             switch (vehicleStatus.Status)
             {
                 case VehicleStatusEnum.StartRoute:
@@ -43,7 +44,7 @@ namespace TravelControlService
                     // increment the number of vehicles on this location
                     vehiclePerLocationNew.Count++;
 
-                    SaveRoute(vehicleStatus.RouteId, VehicleStatusEnum.StartRoute);
+                    SaveRoute(vehicleStatus);
 
                     // send new status to all attached mapClients
                     foreach (var client in mapClients.Values)
@@ -58,7 +59,7 @@ namespace TravelControlService
                     // decrement the number of vehicles on this location
                     vehiclePerLocationNew.Count--;
 
-                    SaveRoute(vehicleStatus.RouteId, VehicleStatusEnum.EndRoute);
+                    SaveRoute(vehicleStatus);
 
                     // send status to all attached mapClients
                     foreach (var client in mapClients.Values)
@@ -67,21 +68,21 @@ namespace TravelControlService
                     }
                     break;
                 case VehicleStatusEnum.Depart:
-                    SaveRoute(vehicleStatus.RouteId, VehicleStatusEnum.Depart, vehicleStatus.DateTime, vehicleStatus.Location);
+                    SaveRoute(vehicleStatus);
                     break;
                 case VehicleStatusEnum.Arrive:
                     // decrement the number of vehicles on the old location
-                    var currentLocation = _vehicleIsOnLocation[vehicleStatus.Vehicle];
-                    var vehiclePerLocationOld = _vehiclesPerLocation[currentLocation];
+                    var oldLocation = _vehicleIsOnLocation[vehicleStatus.Vehicle];
+                    var vehiclePerLocationOld = _vehiclesPerLocation[oldLocation];
                     vehiclePerLocationOld.Count--;
 
                     // move vehicle to new location
-                    _vehicleIsOnLocation[vehicleStatus.Vehicle] = vehicleStatus.Location;
+                    _vehicleIsOnLocation[vehicleStatus.Vehicle] = currentLocation;
 
                     // increment the number of vehicles on the new location
                     vehiclePerLocationNew.Count++;
 
-                    SaveRoute(vehicleStatus.RouteId, VehicleStatusEnum.Arrive, vehicleStatus.DateTime, vehicleStatus.Location);
+                    SaveRoute(vehicleStatus);
 
                     // send status to all attached mapClients
                     foreach (var client in mapClients.Values)
@@ -93,40 +94,30 @@ namespace TravelControlService
             }
         }
 
-        private void SaveRoute(string routeId, VehicleStatusEnum status)
+        private void SaveRoute(VehicleStatus vehicleStatus)
         {
-            var route = _routes.Get(routeId);
-            if (status != VehicleStatusEnum.StartRoute && status != VehicleStatusEnum.EndRoute)
-                return;
-            if (status == VehicleStatusEnum.StartRoute)
-            {
-                route.Started = true;
-                route.Finished = false;
-            }
-            else
-            {
-                route.Finished = true;
-            }
-            _routes.Save(route);
-        }
-
-        private void SaveRoute(string routeId, VehicleStatusEnum status, DateTime dateTime, string locationId)
-        {
-            var route = _routes.Get(routeId);
-            if (status != VehicleStatusEnum.Depart && status != VehicleStatusEnum.Arrive)
-                return;
-            var departure = route.Departures.FirstOrDefault(d => d.FromLocation.LocationId == locationId);
+            var route = _routes.Get(vehicleStatus.RouteId);
+            var departure = route.Departures.FirstOrDefault(d => d.FromLocation.LocationId == vehicleStatus.Location);
             if (departure == null)
-                throw new ApplicationException($"Unknown departure in save route for location {locationId} and document {route._id}");
+                throw new ApplicationException($"Unknown departure in save route for location {vehicleStatus.Location} and document {route._id}");
 
-            var time = new TimeSpan(dateTime.Hour, dateTime.Minute, dateTime.Second);
-            if (status == VehicleStatusEnum.Depart)
+            var time = vehicleStatus.Time;
+            if (vehicleStatus.Status == VehicleStatusEnum.Depart || vehicleStatus.Status == VehicleStatusEnum.StartRoute)
             {
                 departure.ActualDepartureTime = time;
+                if (vehicleStatus.Status == VehicleStatusEnum.StartRoute)
+                {
+                    route.Started = true;
+                    route.Finished = false;
+                }
             }
-            else // Arrive
+            else if (vehicleStatus.Status == VehicleStatusEnum.Arrive || vehicleStatus.Status == VehicleStatusEnum.EndRoute)
             {
                 departure.ActualArrivalTime = time;
+                if (vehicleStatus.Status == VehicleStatusEnum.EndRoute)
+                {
+                    route.Finished = true;
+                }
             }
 
             _routes.Save(route);

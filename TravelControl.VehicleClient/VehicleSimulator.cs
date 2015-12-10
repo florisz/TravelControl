@@ -4,6 +4,7 @@ using TravelControl.Domain;
 using TravelControl.Messages;
 using COM=TravelControl.Common;
 using Microsoft.Practices.Unity;
+using TravelControl.Constants;
 
 namespace TravelControl.VehicleClient
 {
@@ -18,71 +19,97 @@ namespace TravelControl.VehicleClient
         public bool HasEnded { get; private set; }
 
         private readonly Route _route;
-        private readonly IActorRef _vehicleClient;
-        private int _index;
+        private readonly ActorSystem _system;
+        private IActorRef _vehicleClient;
+        private int _currentLocationIndex;
         private bool _vehicleOnStation;
 
-        public VehicleSimulator(IActorRef vehicleClient, Route route, Guid vehicleId)
+        public VehicleSimulator(ActorSystem system, Route route, Guid vehicleId)
         {
             COM.ServiceLocator.Instance.BuildUp(GetType(), this);
 
             VehicleId = vehicleId;
             HasEnded = false;
-            _vehicleClient = vehicleClient;
+            _system = system;
             _route = route;
-            _index = 0;
+            _currentLocationIndex = 0;
             _vehicleOnStation = false;
-        }
-
-        public void StartRoute()
-        {
-            _route.Started = true;
-            var departure = _route.Departures[0];
-            SendClientMessage(departure, VehicleStatusEnum.StartRoute, departure.PlannedArrivalTime);
-
-            Console.WriteLine("Route started at {0}", departure.PlannedArrivalTime);
-        }
-
-        public void EndRoute()
-        {
-            _route.Finished = true;
-            var departure = _route.Departures[_route.Departures.Count - 1];
-            SendClientMessage(departure, VehicleStatusEnum.EndRoute, departure.PlannedArrivalTime);
-            HasEnded = true;
-
-            Console.WriteLine("Route ended at {0}", departure.PlannedArrivalTime);
         }
 
         public void SimulateRoute()
         {
+            if (!_route.Started)
+            {
+                StartRoute();
+            }
+
             var changes = true;
-            while (changes && _index < _route.Departures.Count)
+            while (changes && _currentLocationIndex < _route.Departures.Count)
             {
                 changes = false;
-                var departure = _route.Departures[_index];
-                if (departure.PlannedArrivalTime <= TimeProvider.Now.TimeOfDay && !_vehicleOnStation)
+                var departure = _route.Departures[_currentLocationIndex];
+                if (TimeProvider.CurrentTime >= departure.PlannedArrivalTime)
                 {
-                    Console.WriteLine("Vehicle arrived at {0}", departure.PlannedArrivalTime);
+                    Console.WriteLine("Vehicle arrived at {0}", TimeProvider.CurrentTime);
 
-                    SendClientMessage(departure, VehicleStatusEnum.Arrive, departure.PlannedArrivalTime);
+                    SendClientMessage(departure, VehicleStatusEnum.Arrive);
 
-                    _vehicleOnStation = true;
+                    changes = true;
+
+                    // is vehicle arrived on last location of the route?
+                    if (_currentLocationIndex == _route.Departures.Count - 1)
+                    {
+                        EndRoute();
+                        HasEnded = true;
+                        break;
+                    }
+                }
+                if (departure.PlannedDepartureTime.HasValue && TimeProvider.CurrentTime >= departure.PlannedDepartureTime.Value)
+                {
+                    Console.WriteLine("Vehicle departed at {0}", TimeProvider.CurrentTime);
+
+                    SendClientMessage(departure, VehicleStatusEnum.Depart);
+
                     changes = true;
                 }
-                if (departure.PlannedDepartureTime.HasValue && departure.PlannedDepartureTime < TimeProvider.Now.TimeOfDay)
-                {
-                    Console.WriteLine("Vehicle departed at {0}", departure.PlannedDepartureTime.Value);
 
-                    SendClientMessage(departure, VehicleStatusEnum.Depart, departure.PlannedDepartureTime.Value);
-
-                    _vehicleOnStation = false;
-                    _index++;
-                    changes = true;
-                }
+                _currentLocationIndex++;
             }
         }
 
-        private void SendClientMessage(Departure departure, VehicleStatusEnum status, TimeSpan time)
+        private void StartRoute()
+        {
+            _vehicleClient = ConnectToTravelControlServer();
+
+            var departure = _route.Departures[0];
+            SendClientMessage(departure, VehicleStatusEnum.StartRoute);
+
+            Console.WriteLine("Route started at {0}", departure.PlannedArrivalTime);
+        }
+
+        private void EndRoute()
+        {
+            var departure = _route.Departures[_route.Departures.Count - 1];
+            SendClientMessage(departure, VehicleStatusEnum.EndRoute);
+            HasEnded = true;
+            var disconnect = _vehicleClient.GracefulStop(TimeSpan.FromSeconds(5)).Result;
+
+            if (!disconnect)
+                throw new ApplicationException("vehicleclient could not be disconnected");
+
+            Console.WriteLine("Route ended at {0}", departure.PlannedArrivalTime);
+        }
+
+        private IActorRef ConnectToTravelControlServer()
+        {
+            var vehicleClient = _system.ActorOf(Props.Create<VehicleClientActor>());
+            _system.ActorSelection(GlobalConstant.TravelControlServerUrl);
+            vehicleClient.Tell(new VehicleClientConnectRequest { Id = Guid.NewGuid() });
+
+            return vehicleClient;
+        }
+
+        private void SendClientMessage(Departure departure, VehicleStatusEnum status)
         {
             _vehicleClient.Tell(new VehicleStatus
             {
@@ -90,13 +117,8 @@ namespace TravelControl.VehicleClient
                 Vehicle = VehicleId.ToString(),
                 RouteId = _route._id,
                 Status = status,
-                DateTime = MakeDate(TimeProvider.Now, time),
+                Time = TimeProvider.CurrentTime,
             });
-        }
-
-        private static DateTime MakeDate(DateTime now, TimeSpan arrivalTime)
-        {
-            return new DateTime(now.Year, now.Month, now.Day, arrivalTime.Hours, arrivalTime.Minutes, arrivalTime.Seconds);
         }
 
     }

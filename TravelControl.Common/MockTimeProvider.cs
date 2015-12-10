@@ -13,7 +13,7 @@ namespace TravelControl.Common
         /// </summary>
         public MockTimeProvider(DateTime now)
         {
-            CurrentTime = now;
+            CurrentDateTime = now;
         }
 
         /// <summary>
@@ -31,23 +31,28 @@ namespace TravelControl.Common
         /// <summary>
         /// Returns the date/time as far as this mock is concerned
         /// </summary>
-        public DateTime Now => CurrentTime;
+        public DateTime Now => CurrentDateTime;
 
         /// <summary>
         /// Gets the current time in UTC.
         /// </summary>
-        public DateTime UtcNow => CurrentTime.ToUniversalTime();
+        public DateTime UtcNow => CurrentDateTime.ToUniversalTime();
 
         /// <summary>
         /// Returns the local date/time as far as this mock is concerned
         /// </summary>
-        public DateTime LocalDateTime => CurrentTime.ToLocalTime();
+        public DateTime LocalDateTime => CurrentDateTime.ToLocalTime();
 
 
         /// <summary>
         /// Returns the current date as far as this mock is concerned
         /// </summary>
-        public DateTime Today => CurrentTime.Date;
+        public DateTime Today => CurrentDateTime.Date;
+
+        /// <summary>
+        /// Returns the local time as timespan
+        /// </summary>
+        public TimeSpan CurrentTime => CurrentDateTime.TimeOfDay;
 
         #endregion
 
@@ -56,7 +61,7 @@ namespace TravelControl.Common
         /// The date/time as far as this mock is concerned; with internal setter
         /// Can be set for test purposes
         /// </summary>
-        public DateTime CurrentTime { get; set; }
+        public DateTime CurrentDateTime { get; set; }
 
         /// <summary>
         /// Jumps component time ahead by the interval specified.
@@ -64,7 +69,7 @@ namespace TravelControl.Common
         /// <param name="interval">The interval.</param>
         public void FastForwardBy(TimeSpan interval)
         {
-            this.CurrentTime += interval;
+            this.CurrentDateTime += interval;
         }
 
         #endregion

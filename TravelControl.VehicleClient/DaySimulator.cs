@@ -49,11 +49,8 @@ namespace TravelControl.VehicleClient
                         if (route.Started)
                             continue;
 
-                        var vehicleClient = ConnectToTravelControlServer(system);
                         var vehicleId = Guid.NewGuid();
-                        var simulator = new VehicleSimulator(vehicleClient, route, vehicleId);
-
-                        simulator.StartRoute();
+                        var simulator = new VehicleSimulator(system, route, vehicleId);
 
                         runningVehicles.Add(vehicleId, simulator);
                     }
@@ -64,7 +61,7 @@ namespace TravelControl.VehicleClient
                     vehicleSimulator.SimulateRoute();
                     if (!vehicleSimulator.HasEnded)
                         continue;
-                    vehicleSimulator.EndRoute();
+
                     runningVehicles.Remove(vehicleSimulator.VehicleId);
                 }
 
@@ -120,18 +117,9 @@ namespace TravelControl.VehicleClient
             var timeProvider = TimeProvider as COM.MockTimeProvider;
             if (timeProvider == null)
                 throw new ApplicationException("timeprovider is null");
-            timeProvider.CurrentTime = startTime;
+            timeProvider.CurrentDateTime = startTime;
 
             WriteLine("Start time is set to: {0}", timeProvider.Now);
-        }
-
-        private IActorRef ConnectToTravelControlServer(ActorSystem system)
-        {
-            var vehicleClient = system.ActorOf(Props.Create<VehicleClientActor>());
-            system.ActorSelection(GlobalConstant.TravelControlServerUrl);
-            vehicleClient.Tell(new VehicleClientConnectRequest { Id = Guid.NewGuid() });
-
-            return vehicleClient;
         }
 
     }

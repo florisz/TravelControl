@@ -16,7 +16,7 @@ namespace TravelControl.Messages
         public Guid Id { get; set; }
         public string Vehicle { get; set; }
         public VehicleStatusEnum Status { get; set; }
-        public DateTime DateTime { get; set; }
+        public TimeSpan Time { get; set; }
         public string Location { get; set; }
         public string RouteId { get; set; }
     }

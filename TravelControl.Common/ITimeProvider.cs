@@ -29,5 +29,10 @@ namespace TravelControl.Common
         /// Returns the local time
         /// </summary>
         DateTime LocalDateTime { get; }
+
+        /// <summary>
+        /// Returns the local time
+        /// </summary>
+        TimeSpan CurrentTime { get; }
     }
 }

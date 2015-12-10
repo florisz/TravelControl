@@ -139,7 +139,7 @@ namespace TravelControlService
                 message.Vehicle, 
                 message.Location, 
                 message.Status, 
-                message.DateTime.ToShortTimeString());
+                message.Time);
 
             StatusHandler.Handle(message, _mapClients, logger);
         }
