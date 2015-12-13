@@ -17,30 +17,24 @@ namespace TravelControlService
     public class StatusHandler : IStatusHandler
     {
         private readonly Dictionary<string, VehiclesPerLocation> _vehiclesPerLocation;
-        private readonly Dictionary<string, string> _vehicleIsOnLocation;
         private readonly IRoutes _routes;
 
         public StatusHandler(IStopLocations stopLocations, IRoutes routes)
         {
             _routes = routes;
-            _vehicleIsOnLocation = new Dictionary<string, string>();
             _vehiclesPerLocation = new Dictionary<string, VehiclesPerLocation>();
             foreach (var location in stopLocations.All.Values)
             {
                 _vehiclesPerLocation.Add(location.LocationId, new VehiclesPerLocation { StopLocation = location, Count = 0 });
             }
-    }
+        }
 
-    public void Handle(VehicleStatus vehicleStatus, Dictionary<Guid, IActorRef> mapClients, ILoggingAdapter logger)
+        public void Handle(VehicleStatus vehicleStatus, Dictionary<Guid, IActorRef> mapClients, ILoggingAdapter logger)
         {
             var vehiclePerLocationNew = _vehiclesPerLocation[vehicleStatus.Location];
-            var currentLocation = vehicleStatus.Location;
             switch (vehicleStatus.Status)
             {
                 case VehicleStatusEnum.StartRoute:
-                    // keep track of the location of the vehicle
-                    _vehicleIsOnLocation[vehicleStatus.Vehicle] = vehicleStatus.Location;
-
                     // increment the number of vehicles on this location
                     vehiclePerLocationNew.Count++;
 
@@ -53,9 +47,6 @@ namespace TravelControlService
                     }
                     break;
                 case VehicleStatusEnum.EndRoute:
-                    // the vehicle can be removed from the current list of vehicles
-                    _vehicleIsOnLocation.Remove(vehicleStatus.Vehicle);
-
                     // decrement the number of vehicles on this location
                     vehiclePerLocationNew.Count--;
 
@@ -71,14 +62,6 @@ namespace TravelControlService
                     SaveRoute(vehicleStatus);
                     break;
                 case VehicleStatusEnum.Arrive:
-                    // decrement the number of vehicles on the old location
-                    var oldLocation = _vehicleIsOnLocation[vehicleStatus.Vehicle];
-                    var vehiclePerLocationOld = _vehiclesPerLocation[oldLocation];
-                    vehiclePerLocationOld.Count--;
-
-                    // move vehicle to new location
-                    _vehicleIsOnLocation[vehicleStatus.Vehicle] = currentLocation;
-
                     // increment the number of vehicles on the new location
                     vehiclePerLocationNew.Count++;
 
@@ -87,12 +70,12 @@ namespace TravelControlService
                     // send status to all attached mapClients
                     foreach (var client in mapClients.Values)
                     {
-                        client.Tell(new LocationStatusMessage { Location = vehiclePerLocationOld.StopLocation.LocationId, VehicleCount = vehiclePerLocationOld.Count });
                         client.Tell(new LocationStatusMessage { Location = vehiclePerLocationNew.StopLocation.LocationId, VehicleCount = vehiclePerLocationNew.Count });
                     }
                     break;
             }
         }
+
 
         private void SaveRoute(VehicleStatus vehicleStatus)
         {

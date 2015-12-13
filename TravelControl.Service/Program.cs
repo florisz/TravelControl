@@ -44,8 +44,8 @@ namespace TravelControlService
             var config = ConfigurationFactory.ParseString(@"
 akka {  
     log-config-on-start = off
-    stdout-loglevel = DEBUG
-    loglevel = DEBUG
+    stdout-loglevel = ERROR
+    loglevel = ERROR
     loggers = [""Akka.Logger.NLog.NLogLogger, Akka.Logger.NLog""]
     actor {
         provider = ""Akka.Remote.RemoteActorRefProvider, Akka.Remote""
@@ -72,8 +72,8 @@ akka {
 ");
             ServiceLocator.Instance.RegisterTypes(container =>
                 {
-                    container.RegisterType<IStorage, StorageInCouchDb>(new PerResolveLifetimeManager());
                     container.RegisterType<IStopLocations, StopLocations>(new ContainerControlledLifetimeManager());
+                    container.RegisterType<IStorage, StorageInCouchDb>(new PerThreadLifetimeManager());
                     container.RegisterType<IConnections, Connections>(new ContainerControlledLifetimeManager());
                     container.RegisterType<IRoutes, Routes>(new ContainerControlledLifetimeManager());
                     container.RegisterType<IStatusHandler, StatusHandler>(new PerResolveLifetimeManager());

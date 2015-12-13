@@ -135,10 +135,10 @@ namespace TravelControlService
         public void Handle(VehicleStatus message)
         {
             var logger = Context.GetLogger();
-            logger.Debug("Client send status: vehicle={0}, location={1}, status={2}, time={3}", 
-                message.Vehicle, 
-                message.Location, 
-                message.Status, 
+            logger.Debug("Client has send status: vehicle={0}, location={1}, status={2}, time={3}",
+                message.Vehicle,
+                message.Location,
+                message.Status,
                 message.Time);
 
             StatusHandler.Handle(message, _mapClients, logger);

@@ -5,6 +5,7 @@ using TravelControl.Messages;
 using COM=TravelControl.Common;
 using Microsoft.Practices.Unity;
 using TravelControl.Constants;
+using static System.Console;
 
 namespace TravelControl.VehicleClient
 {
@@ -15,34 +16,26 @@ namespace TravelControl.VehicleClient
         [Dependency]
         public IRoutes Routes { get; set; }
 
-        public Guid VehicleId { get; }
+        public int VehicleId { get; }
         public bool HasEnded { get; private set; }
 
         private readonly Route _route;
-        private readonly ActorSystem _system;
-        private IActorRef _vehicleClient;
+        private readonly IActorRef _vehicleClient;
         private int _currentLocationIndex;
-        private bool _vehicleOnStation;
 
-        public VehicleSimulator(ActorSystem system, Route route, Guid vehicleId)
+        public VehicleSimulator(IActorRef client, Route route, int vehicleId)
         {
             COM.ServiceLocator.Instance.BuildUp(GetType(), this);
 
             VehicleId = vehicleId;
             HasEnded = false;
-            _system = system;
+            _vehicleClient = client;
             _route = route;
             _currentLocationIndex = 0;
-            _vehicleOnStation = false;
         }
 
         public void SimulateRoute()
         {
-            if (!_route.Started)
-            {
-                StartRoute();
-            }
-
             var changes = true;
             while (changes && _currentLocationIndex < _route.Departures.Count)
             {
@@ -50,7 +43,7 @@ namespace TravelControl.VehicleClient
                 var departure = _route.Departures[_currentLocationIndex];
                 if (TimeProvider.CurrentTime >= departure.PlannedArrivalTime)
                 {
-                    Console.WriteLine("Vehicle arrived at {0}", TimeProvider.CurrentTime);
+                    WriteLine("Vehicle {0} arrived at {1}", VehicleId, TimeProvider.CurrentTime);
 
                     SendClientMessage(departure, VehicleStatusEnum.Arrive);
 
@@ -59,54 +52,40 @@ namespace TravelControl.VehicleClient
                     // is vehicle arrived on last location of the route?
                     if (_currentLocationIndex == _route.Departures.Count - 1)
                     {
-                        EndRoute();
                         HasEnded = true;
-                        break;
+                        return;
                     }
                 }
                 if (departure.PlannedDepartureTime.HasValue && TimeProvider.CurrentTime >= departure.PlannedDepartureTime.Value)
                 {
-                    Console.WriteLine("Vehicle departed at {0}", TimeProvider.CurrentTime);
+                    WriteLine("Vehicle {0} departed at {1}", VehicleId, TimeProvider.CurrentTime);
 
                     SendClientMessage(departure, VehicleStatusEnum.Depart);
 
                     changes = true;
                 }
 
-                _currentLocationIndex++;
+                if (changes)
+                {
+                    _currentLocationIndex++;
+                }
             }
         }
 
-        private void StartRoute()
+        public void StartRoute()
         {
-            _vehicleClient = ConnectToTravelControlServer();
-
             var departure = _route.Departures[0];
             SendClientMessage(departure, VehicleStatusEnum.StartRoute);
 
-            Console.WriteLine("Route started at {0}", departure.PlannedArrivalTime);
+            WriteLine("Route started at {0}", departure.PlannedArrivalTime);
         }
 
-        private void EndRoute()
+        public void EndRoute()
         {
             var departure = _route.Departures[_route.Departures.Count - 1];
             SendClientMessage(departure, VehicleStatusEnum.EndRoute);
-            HasEnded = true;
-            var disconnect = _vehicleClient.GracefulStop(TimeSpan.FromSeconds(5)).Result;
 
-            if (!disconnect)
-                throw new ApplicationException("vehicleclient could not be disconnected");
-
-            Console.WriteLine("Route ended at {0}", departure.PlannedArrivalTime);
-        }
-
-        private IActorRef ConnectToTravelControlServer()
-        {
-            var vehicleClient = _system.ActorOf(Props.Create<VehicleClientActor>());
-            _system.ActorSelection(GlobalConstant.TravelControlServerUrl);
-            vehicleClient.Tell(new VehicleClientConnectRequest { Id = Guid.NewGuid() });
-
-            return vehicleClient;
+            WriteLine("Route ended at {0}", departure.PlannedArrivalTime);
         }
 
         private void SendClientMessage(Departure departure, VehicleStatusEnum status)

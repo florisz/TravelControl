@@ -10,8 +10,14 @@ namespace TravelControl.Storage
 {
     public class StorageInCouchDb : IStorage
     {
+        private MyCouchClient _client;
+
+        public StorageInCouchDb()
+        {
+            _client = new MyCouchClient(DatabaseUri, "travelcontrol");        
+        }
         #region Constant stuff
-        private const string DATABASE_URI = "http://127.0.0.1:5984";
+        private const string DatabaseUri = "http://127.0.0.1:5984";
         #endregion
 
         #region Connection functions
@@ -36,26 +42,24 @@ namespace TravelControl.Storage
 
         public RouteEntity GetRoute(string id)
         {
-            var client = new MyCouchClient(DATABASE_URI, "travelcontrol");
-            var response = client.Documents.GetAsync(id).Result;
+            var response = _client.Documents.GetAsync(id).Result;
 
-            return client.Serializer.Deserialize<RouteEntity>(response.Content);
+            return _client.Serializer.Deserialize<RouteEntity>(response.Content);
         }
 
         public IEnumerable<RouteEntity> GetRoutes(string departureTimeFrom, string departureTimeTo)
         {
-            var client = new MyCouchClient(DATABASE_URI, "travelcontrol");
             var request = new QueryViewRequest("Routes", "ByDepartureTime")
                                     .Configure(query => query.StartKey(departureTimeFrom)
                                     .EndKey(departureTimeTo)
                                     .IncludeDocs(true));
 
-            var viewResponse = client.Views.QueryAsync(request).Result;
+            var viewResponse = _client.Views.QueryAsync(request).Result;
 
             var list = new List<RouteEntity>();
             foreach (var row in viewResponse.Rows)
             {
-                var routeEntity = client.Serializer.Deserialize<RouteEntity>(row.IncludedDoc);
+                var routeEntity = _client.Serializer.Deserialize<RouteEntity>(row.IncludedDoc);
                 list.Add(routeEntity);
             }
 
@@ -64,9 +68,8 @@ namespace TravelControl.Storage
 
         public string SaveRoute(RouteEntity route)
         {
-            var client = new MyCouchClient(DATABASE_URI, "travelcontrol");
             var doc = Serialize(route);
-            var response = client.Documents.PutAsync(route._id, route._rev, doc).Result;
+            var response = _client.Documents.PutAsync(route._id, route._rev, doc).Result;
             if (!response.IsSuccess)
                 throw new ApplicationException(
                     $"Save was not succesfull (id:{response.Id}, error:{response.Error}, reason:{response.Reason}, statuscode:{response.StatusCode})");
@@ -93,11 +96,10 @@ namespace TravelControl.Storage
         /// <returns></returns>
         private IEnumerable<T> GetAll<T>(string viewId, string viewName)
         {
-            var client = new MyCouchClient(DATABASE_URI, "travelcontrol");
             var request = new QueryViewRequest(viewId, viewName)
                 .Configure(c => c.IncludeDocs(true));
 
-            var viewResponse = client.Views.QueryAsync(request).Result;
+            var viewResponse = _client.Views.QueryAsync(request).Result;
 
             var list = new List<T>();
             foreach (var row in viewResponse.Rows)
@@ -112,7 +114,7 @@ namespace TravelControl.Storage
 
         private int GetValue(string viewId, string viewName)
         {
-            var client = new MyCouchClient(DATABASE_URI, "travelcontrol");
+            var client = new MyCouchClient(DatabaseUri, "travelcontrol");
             var request = new QueryViewRequest(viewId, viewName);
             var response = client.Views.QueryAsync(request).Result;
 

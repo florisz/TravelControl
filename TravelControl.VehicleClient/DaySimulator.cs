@@ -31,14 +31,19 @@ namespace TravelControl.VehicleClient
             // set time to the time of the earliest departure time
             SetTimeProvider(GetEarliestDepartureTime());
 
-            var runningVehicles = new Dictionary<Guid, VehicleSimulator>();
+            var runningVehicles = new Dictionary<int, VehicleSimulator>();
 
-            // while all routes are handled
-            while (TimeProvider.Now.TimeOfDay != new TimeSpan(0,0,0))
+            // for performance reasons use one client actor
+            var client = ConnectToTravelControlServer(system);
+
+            var vehicleCount = 0;
+
+            // while not all routes are handled
+            while (TimeProvider.CurrentTime != new TimeSpan(0,0,0))
             {
-                var startTime = TimeProvider.Now;
+                var routes = Routes.Get(TimeProvider.CurrentTime);
 
-                var routes = Routes.Get(new TimeSpan(startTime.Hour, startTime.Minute, startTime.Second));
+                Console.WriteLine($"Simulate new minute: {TimeProvider.CurrentTime}");
                 var routeArray = routes as Route[] ?? routes.ToArray();
 
                 // start all new routes
@@ -49,10 +54,11 @@ namespace TravelControl.VehicleClient
                         if (route.Started)
                             continue;
 
-                        var vehicleId = Guid.NewGuid();
-                        var simulator = new VehicleSimulator(system, route, vehicleId);
+                        var simulator = new VehicleSimulator(client, route, vehicleCount);
+                        simulator.StartRoute();
 
-                        runningVehicles.Add(vehicleId, simulator);
+                        runningVehicles.Add(vehicleCount, simulator);
+                        vehicleCount++;
                     }
                 }
 
@@ -62,19 +68,21 @@ namespace TravelControl.VehicleClient
                     if (!vehicleSimulator.HasEnded)
                         continue;
 
+                    vehicleSimulator.EndRoute();
                     runningVehicles.Remove(vehicleSimulator.VehicleId);
                 }
 
                 var timeProvider = TimeProvider as COM.MockTimeProvider;
-                System.Threading.Thread.Sleep(2000);
+                //System.Threading.Thread.Sleep(2000);
                 timeProvider?.FastForwardBy(new TimeSpan(0, 1, 0));
+                WriteLine("Total vehicles={0}", vehicleCount);
                 WriteLine("Number of active vehicles={0}", runningVehicles.Count);
             }
         }
 
         private void InitialiseRoutes()
         {
-            for (var hour = 0; hour <= 23; hour++)
+            for (var hour = 0; hour < 24; hour++)
             {
                 WriteLine("Initialising routes for hour {0}", hour);
                 for (var minute = 0; minute < 60; minute++)
@@ -93,6 +101,25 @@ namespace TravelControl.VehicleClient
                     }
                 }
             }
+        }
+
+        private IActorRef ConnectToTravelControlServer(ActorSystem system)
+        {
+            var vehicleClient = system.ActorOf(Props.Create<VehicleClientActor>());
+            system.ActorSelection(GlobalConstant.TravelControlServerUrl);
+            try
+            {
+                var task = vehicleClient.Ask(new VehicleClientConnectRequest { Id = Guid.NewGuid() }, TimeSpan.FromSeconds(10));
+                task.Wait();
+            }
+            catch (Exception ex)
+            {
+                WriteLine($"Exception: {ex.Message} while connecting");
+                // no use in continuing
+                throw new ApplicationException("Can not connect to travelcontrol server");
+            }
+
+            return vehicleClient;
         }
 
         private TimeSpan GetEarliestDepartureTime()

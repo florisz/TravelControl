@@ -20,20 +20,37 @@ namespace TravelControl.VehicleClient
             _id = message.Id;
 
             Console.WriteLine("Connecting...");
+            try
+            {
+                var task = _server.Ask(message, TimeSpan.FromSeconds(10));
+                task.Wait();
 
-            var task = _server.Ask(message, TimeSpan.FromSeconds(10));
-            task.Wait();
-            var result = task.Result;
-            if (result.GetType() == typeof (VehicleClientConnectResponse))
-            {
-                _connected = true;
-                Console.WriteLine("Connected!");
+                var result = task.Result;
+                if (result.GetType() == typeof(VehicleClientConnectResponse))
+                {
+                    _connected = true;
+                    Console.WriteLine("Connected!");
+                }
+                else if (result.GetType() == typeof(Failure))
+                {
+                    var failure = result as Failure;
+                    Sender.Tell(result, Self);
+                    Console.WriteLine($"Failure in connecting: {failure.Exception.Message}\nStacktrace:\n{failure.Exception.StackTrace}");
+                    return;
+                }
             }
-            else if (result.GetType() == typeof(Failure))
+            catch (Exception ex)
             {
-                var failure = result as Failure;
-                Console.WriteLine($"Failure in connecting: {failure.Exception.Message}\nStacktrace:\n{failure.Exception.StackTrace}");
+                Sender.Tell(new Failure { Exception = ex }, Self);
+                return;
             }
+
+            Sender.Tell(new VehicleClientConnectResponse
+            {
+                Id = message.Id,
+                RequestOk = true,
+                ServerException = null
+            }, Self);
         }
 
         public void Handle(VehicleClientConnectResponse message)
