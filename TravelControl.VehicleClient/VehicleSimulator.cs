@@ -90,10 +90,10 @@ namespace TravelControl.VehicleClient
 
         private void SendClientMessage(Departure departure, VehicleStatusEnum status)
         {
-            _vehicleClient.Tell(new VehicleStatus
+            _vehicleClient.Tell(new VehicleStatusMessage
             {
                 Location = departure.FromLocation.LocationId,
-                Vehicle = VehicleId.ToString(),
+                VehicleId = VehicleId.ToString(),
                 RouteId = _route._id,
                 Status = status,
                 Time = TimeProvider.CurrentTime,

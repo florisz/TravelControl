@@ -8,6 +8,6 @@ namespace TravelControlService
 {
     public interface IStatusHandler
     {
-        void Handle(VehicleStatus status, Dictionary<Guid, IActorRef> mapClients, ILoggingAdapter logger);
+        void Handle(VehicleStatusMessage status, Dictionary<Guid, IActorRef> mapClients, ILoggingAdapter logger);
     }
 }

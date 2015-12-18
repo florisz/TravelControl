@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Threading.Tasks;
 using MyCouch;
 using MyCouch.Requests;
 
@@ -66,10 +67,10 @@ namespace TravelControl.Storage
             return list;
         }
 
-        public string SaveRoute(RouteEntity route)
+        public async Task<string> SaveRoute(RouteEntity route)
         {
             var doc = Serialize(route);
-            var response = _client.Documents.PutAsync(route._id, route._rev, doc).Result;
+            var response = await _client.Documents.PutAsync(route._id, route._rev, doc);
             if (!response.IsSuccess)
                 throw new ApplicationException(
                     $"Save was not succesfull (id:{response.Id}, error:{response.Error}, reason:{response.Reason}, statuscode:{response.StatusCode})");
@@ -80,6 +81,54 @@ namespace TravelControl.Storage
         public int GetActiveRouteCount()
         {
             return GetValue("Routes", "Active");
+        }
+
+        public List<VehicleStatusEntity> GetStatus(string vehicleId)
+        {
+            var request = new QueryViewRequest("VehicleStatus", "ByVehicle")
+                                    .Configure(query => query.Key(vehicleId)
+                                    .IncludeDocs(true));
+
+            var viewResponse = _client.Views.QueryAsync(request).Result;
+
+            var list = new List<VehicleStatusEntity>();
+            foreach (var row in viewResponse.Rows)
+            {
+                var statusEntity = _client.Serializer.Deserialize<VehicleStatusEntity>(row.IncludedDoc);
+                list.Add(statusEntity);
+            }
+
+            return list;
+        }
+
+        public async Task SaveStatus(VehicleStatusEntity vehicleStatusEntity)
+        {
+            try
+            {
+                var doc = Serialize(vehicleStatusEntity);
+                var response = await _client.Documents.PostAsync(doc);
+                if (!response.IsSuccess)
+                {
+                    throw new ApplicationException($"Save vehicle status raised an error: {response.Error} with reason: {response.Reason}");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"Exception in save vehicle status", ex);
+            }
+        }
+
+        public void DeleteAllStatusDocuments()
+        {
+            var request = new QueryViewRequest("VehicleStatus", "DeleteAll");
+
+            var response = _client.Views.QueryAsync(request).Result;
+
+            foreach (var row in response.Rows)
+            {
+                var revision = row.Value.Substring(1, row.Value.Length - 2);
+                var result = _client.Documents.DeleteAsync(row.Id, revision).Result;
+            }
         }
 
         #endregion

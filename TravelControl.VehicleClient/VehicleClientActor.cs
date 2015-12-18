@@ -8,17 +8,14 @@ namespace TravelControl.VehicleClient
     class VehicleClientActor : TypedActor,
         IHandle<VehicleClientConnectRequest>,
         IHandle<VehicleClientConnectResponse>,
-        IHandle<VehicleStatus>,
+        IHandle<VehicleStatusMessage>,
         ILogReceive
     {
         private readonly ActorSelection _server = Context.ActorSelection(GlobalConstant.TravelControlServerUrl);
-        private Guid _id;
         private bool _connected;
 
         public void Handle(VehicleClientConnectRequest message)
         {
-            _id = message.Id;
-
             Console.WriteLine("Connecting...");
             try
             {
@@ -61,9 +58,8 @@ namespace TravelControl.VehicleClient
             }
         }
 
-        public void Handle(VehicleStatus message)
+        public void Handle(VehicleStatusMessage message)
         {
-            message.Id = _id;
             _server.Tell(message);
         }
 

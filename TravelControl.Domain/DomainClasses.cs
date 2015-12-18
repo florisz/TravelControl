@@ -3,6 +3,14 @@ using System.Collections.Generic;
 
 namespace TravelControl.Domain
 {
+    public enum VehicleStatusEnum
+    {
+        StartRoute = 1,
+        EndRoute = 2,
+        Depart = 3,
+        Arrive = 4
+    }
+
     public class Route
     {
         public Route()
@@ -60,6 +68,18 @@ namespace TravelControl.Domain
         public TimeSpan? ActualDepartureTime { get; set; }
         public bool HasArrived => ActualArrivalTime != null;
         public bool HasDeparted => ActualDepartureTime != null;
+        public string _id { get; set; }
+        public string _rev { get; set; }
+    }
+
+    public class VehicleStatus
+    {
+        public string VehicleId { get; set; }
+        public string RouteId { get; set; }
+        public VehicleStatusEnum Status { get; set; }
+        public TimeSpan Time { get; set; }
+        public string Location { get; set; }
+
         public string _id { get; set; }
         public string _rev { get; set; }
     }

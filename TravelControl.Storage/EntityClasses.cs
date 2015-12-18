@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace TravelControl.Storage
@@ -7,7 +8,8 @@ namespace TravelControl.Storage
     {
         StopLocation = 1,
         Connection = 2,
-        Route = 3    
+        Route = 3,
+        VehicleStatus = 4    
     }
 
     public class RouteEntity 
@@ -37,8 +39,6 @@ namespace TravelControl.Storage
             FromLocation = fromLocation;
             PlannedArrivalTime = plannedArrivalTime;
             PlannedDepartureTime = plannedDepartureTime;
-            ActualArrivalTime = null;
-            ActualDepartureTime = null;
         }
         [DataMember]
         public string FromLocation { get; set; }
@@ -46,11 +46,18 @@ namespace TravelControl.Storage
         public string PlannedArrivalTime { get; set; }
         [DataMember]
         public string PlannedDepartureTime { get; set; }
-        [DataMember]
-        public string ActualArrivalTime { get; set; }
-        [DataMember]
-        public string ActualDepartureTime { get; set; }
     }
+
+    public class VehicleStatusEntity
+    {
+        public int DocType { get; set; }
+        public string VehicleId { get; set; }
+        public string RouteId { get; set; }
+        public int Status { get; set; }
+        public string Time { get; set; }
+        public string Location { get; set; }
+    }
+
 
     public class StopLocationEntity 
     {

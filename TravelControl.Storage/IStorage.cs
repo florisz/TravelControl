@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TravelControl.Storage
 {
@@ -11,10 +12,14 @@ namespace TravelControl.Storage
         IEnumerable<StopLocationEntity> GetAllStopLocations();
 
         // Route interface is somewhat more complex because we can't get the list in memory (too big)
-        RouteEntity GetRoute(string Id);
-        IEnumerable<RouteEntity> GetRoutes(string DepartureTime);
-        IEnumerable<RouteEntity> GetRoutes(string DepartureTimeFrom, string DepartureTimeTo);
-        string SaveRoute(RouteEntity Route);
+        RouteEntity GetRoute(string id);
+        IEnumerable<RouteEntity> GetRoutes(string departureTime);
+        IEnumerable<RouteEntity> GetRoutes(string departureTimeFrom, string departureTimeTo);
+        Task<string> SaveRoute(RouteEntity route);
         int GetActiveRouteCount();
+
+        List<VehicleStatusEntity> GetStatus(string vehicleId);
+        Task SaveStatus(VehicleStatusEntity vehicleStatusEntity);
+        void DeleteAllStatusDocuments();
     }
 }

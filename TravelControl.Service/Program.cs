@@ -3,10 +3,12 @@ using Akka.Configuration;
 using Akka.Event;
 using Microsoft.Practices.Unity;
 using System;
+using System.Linq;
 using Topshelf;
 using TravelControl.Common;
 using TravelControl.Domain;
 using TravelControl.Storage;
+using ITimeProvider = TravelControl.Common.ITimeProvider;
 
 namespace TravelControlService
 {
@@ -90,8 +92,6 @@ akka {
             var allConnections = connections.All;
 
             // TESTING
-            //var routes = ServiceLocator.Instance.Resolve<IRoutes>();
-            //var route = routes.Get("4ee46f213b9aabc9e4f99ee909858c97");
             // END OF TESTING
             logger.Debug("Windows service TravelControl static data initialised...");
 
@@ -115,6 +115,4 @@ akka {
             logger.Debug("Windows service TravelControl Central Service stopped");
         }
     }
-
-
 }

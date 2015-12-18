@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TravelControl.Storage;
 
 namespace TravelControl.Domain
@@ -33,15 +34,25 @@ namespace TravelControl.Domain
             return ConvertRouteEntityList(routeEntities);
         }
 
-        public void Save(Route route)
+        public async Task Save(Route route)
         {
-            var revision = _storage.SaveRoute(ConvertToRouteEntity(route));
+            var revision = await _storage.SaveRoute(ConvertToRouteEntity(route));
             route._rev = revision;
+        }
+
+        public void DeleteAllStatusDocuments()
+        {
+            _storage.DeleteAllStatusDocuments();
         }
 
         public int GetActiveRouteCount()
         {
             return _storage.GetActiveRouteCount();
+        }
+
+        public async Task SaveStatus(VehicleStatus status)
+        {
+            await _storage.SaveStatus(ConvertToVehicleStatusEntity(status));
         }
 
         private IEnumerable<Route> ConvertRouteEntityList(IEnumerable<RouteEntity> routeEntities)
@@ -66,8 +77,6 @@ namespace TravelControl.Domain
                 var departureTime = StringToTimeSpan(de.PlannedDepartureTime);
                 departures.Add(new Departure
                     {
-                        ActualArrivalTime = StringToTimeSpan(de.ActualArrivalTime),
-                        ActualDepartureTime = StringToTimeSpan(de.ActualDepartureTime),
                         FromLocation = _stopLocations.All[de.FromLocation],
                         PlannedArrivalTime = arrivalTime.Value,
                         PlannedDepartureTime = departureTime
@@ -100,8 +109,6 @@ namespace TravelControl.Domain
                     : null;
                 departures.Add(new DepartureEntity
                 {
-                    ActualArrivalTime = actualArrivalTime,
-                    ActualDepartureTime = actualDepartureTime,
                     PlannedArrivalTime = TimeSpanToString(de.PlannedArrivalTime),
                     PlannedDepartureTime = de.PlannedDepartureTime.HasValue? TimeSpanToString(de.PlannedDepartureTime.Value) : "",
                     FromLocation = de.FromLocation.LocationId
@@ -120,6 +127,19 @@ namespace TravelControl.Domain
             };
 
             return routeEntity;
+        }
+
+        private static VehicleStatusEntity ConvertToVehicleStatusEntity(VehicleStatus status)
+        {
+            return new VehicleStatusEntity
+                {
+                    Status = (int) status.Status,
+                    DocType = (int) DocumentType.VehicleStatus,
+                    Location = status.Location,
+                    RouteId = status.RouteId,
+                    Time = TimeSpanToString(status.Time),
+                    VehicleId = status.VehicleId
+                };
         }
 
         private static string TimeSpanToString(TimeSpan timeSpan)

@@ -3,22 +3,13 @@ using TravelControl.Domain;
 
 namespace TravelControl.Messages
 {
-    public enum VehicleStatusEnum
+    public class VehicleStatusMessage
     {
-        StartRoute = 1,
-        EndRoute = 2,
-        Depart = 3,
-        Arrive = 4
-    }
-
-    public class VehicleStatus
-    {
-        public Guid Id { get; set; }
-        public string Vehicle { get; set; }
+        public string VehicleId { get; set; }
+        public string RouteId { get; set; }
         public VehicleStatusEnum Status { get; set; }
         public TimeSpan Time { get; set; }
         public string Location { get; set; }
-        public string RouteId { get; set; }
     }
 
     public class LocationStatusMessage

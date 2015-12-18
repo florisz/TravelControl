@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TravelControl.Storage
 {
@@ -825,7 +826,7 @@ namespace TravelControl.Storage
                         string.CompareOrdinal(r.Departures[0].PlannedDepartureTime, departureTimeTo) <= 0);
         }
 
-        public string SaveRoute(RouteEntity route)
+        public async Task<string> SaveRoute(RouteEntity route)
         {
             var routeToSave = AllRoutes.FirstOrDefault(r => r.RouteId == route.RouteId);
             if (routeToSave == null)
@@ -842,7 +843,22 @@ namespace TravelControl.Storage
 
         public int GetActiveRouteCount()
         {
-            return AllRoutes.Where(r => r.Started && !r.Finished).Count();
+            return AllRoutes.Count(r => r.Started && !r.Finished);
+        }
+
+        public List<VehicleStatusEntity> GetStatus(string vehicleId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SaveStatus(VehicleStatusEntity vehicleStatusEntity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeleteAllStatusDocuments()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
@@ -13550,6 +13566,7 @@ namespace TravelControl.Storage
                 },
             };
         }
+
         #endregion
     }
 }

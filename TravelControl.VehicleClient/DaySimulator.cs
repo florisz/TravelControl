@@ -82,25 +82,9 @@ namespace TravelControl.VehicleClient
 
         private void InitialiseRoutes()
         {
-            for (var hour = 0; hour < 24; hour++)
-            {
-                WriteLine("Initialising routes for hour {0}", hour);
-                for (var minute = 0; minute < 60; minute++)
-                {
-                    var timeSpan = new TimeSpan(hour, minute, 0);
-                    var routes = Routes.Get(timeSpan);
-                    foreach (var route in routes)
-                    {
-                        if (route.Finished || route.Started)
-                        {
-                            route.Finished = false;
-                            route.Started = false;
-                            route.Departures.ForEach(d => d.ActualArrivalTime = d.ActualDepartureTime = null );
-                            Routes.Save(route);
-                        }
-                    }
-                }
-            }
+            Console.WriteLine("Delete all status documents...");
+            Routes.DeleteAllStatusDocuments();
+            Console.WriteLine("Delete ready");
         }
 
         private IActorRef ConnectToTravelControlServer(ActorSystem system)
@@ -116,7 +100,7 @@ namespace TravelControl.VehicleClient
             {
                 WriteLine($"Exception: {ex.Message} while connecting");
                 // no use in continuing
-                throw new ApplicationException("Can not connect to travelcontrol server");
+                throw new ApplicationException("Can not connect to travelcontrol server", ex);
             }
 
             return vehicleClient;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TravelControl.Domain
 {
@@ -8,7 +9,10 @@ namespace TravelControl.Domain
         Route Get(string id);
         IEnumerable<Route> Get(TimeSpan departureTime);
         IEnumerable<Route> Get(TimeSpan departureTimeFrom, TimeSpan departureTimeTo);
-        void Save(Route route);
+        Task Save(Route route);
+        Task SaveStatus(VehicleStatus status);
+        void DeleteAllStatusDocuments();
         int GetActiveRouteCount();
     }
+
 }

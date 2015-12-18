@@ -16,7 +16,7 @@ namespace TravelControlService
         IHandle<TimeTableClientDisconnect>,
         IHandle<MapClientConnectRequest>,
         IHandle<MapClientDisconnect>,
-        IHandle<VehicleStatus>,
+        IHandle<VehicleStatusMessage>,
         ILogReceive
     {
         private readonly Dictionary<Guid, IActorRef> _vehicleClients = new Dictionary<Guid, IActorRef>();
@@ -132,11 +132,11 @@ namespace TravelControlService
             }
         }
 
-        public void Handle(VehicleStatus message)
+        public void Handle(VehicleStatusMessage message)
         {
             var logger = Context.GetLogger();
             logger.Debug("Client has send status: vehicle={0}, location={1}, status={2}, time={3}",
-                message.Vehicle,
+                message.VehicleId,
                 message.Location,
                 message.Status,
                 message.Time);
