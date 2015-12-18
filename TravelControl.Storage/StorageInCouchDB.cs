@@ -85,7 +85,7 @@ namespace TravelControl.Storage
 
         public List<VehicleStatusEntity> GetStatus(string vehicleId)
         {
-            var request = new QueryViewRequest("VehicleStatus", "ByVehicle")
+            var request = new QueryViewRequest("VehicleStatus", "ByRoute")
                                     .Configure(query => query.Key(vehicleId)
                                     .IncludeDocs(true));
 

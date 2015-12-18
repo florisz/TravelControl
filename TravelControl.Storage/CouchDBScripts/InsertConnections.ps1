@@ -427,6 +427,7 @@ Function PostConnections2CouchDB($url, $connections)
 		$body = $_
 		PostConnection2CouchDB $url $body
 	}
+	Write-Host("Connection documents successful created")
 }
 
 Function PostConnection2CouchDB($url, $body)
@@ -435,10 +436,6 @@ Function PostConnection2CouchDB($url, $body)
     if ($return.StatusCode -ne "201")
     {
         Write-Error("Document could not be created, Received $($return.StatusCode) from post for body $body")
-    }
-    else
-    {
-        Write-Host("Connection document successful created")
     }
 }
 

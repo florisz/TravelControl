@@ -394,6 +394,7 @@ Function PostStopLocations2CouchDB($url, $locations)
 		$body = $_
 		PostStopLocation2CouchDB $url $body
 	}
+    Write-Host("StopLocation documents successful created")
 }
 
 Function PostStopLocation2CouchDB($url, $body)
@@ -402,10 +403,6 @@ Function PostStopLocation2CouchDB($url, $body)
     if ($return.StatusCode -ne "201")
     {
         Write-Error("Document could not be created, Received $return.StatusCode from post for body $body")
-    }
-    else
-    {
-        Write-Host("StopLocation document successful created")
     }
 }
 
@@ -419,11 +416,11 @@ Function PostView2CouchDB($url, $viewBody)
     if ($return.StatusCode -ne "201")
     {
 		$statusCode = $return.StatusCode
-        Write-Error("View All could not be created, Received $statusCode from post for body $viewBody")
+        Write-Error("View All for StopLocations could not be created, Received $statusCode from post for body $viewBody")
     }
     else
     {
-        Write-Host("View All successful created")
+        Write-Host("View All for StopLocations successful created")
     }
 
 }

@@ -83,7 +83,7 @@ namespace TravelControl.VehicleClient
         private void InitialiseRoutes()
         {
             Console.WriteLine("Delete all status documents...");
-            Routes.DeleteAllStatusDocuments();
+            //Routes.DeleteAllStatusDocuments();
             Console.WriteLine("Delete ready");
         }
 

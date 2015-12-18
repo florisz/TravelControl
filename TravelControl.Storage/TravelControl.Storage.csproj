@@ -56,9 +56,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CouchDBScripts\CreateDatabase.ps1" />
+    <None Include="CouchDBScripts\RestoreDatabase.ps1" />
+    <None Include="CouchDBScripts\BackupDatabase.ps1" />
     <None Include="CouchDBScripts\InsertRoutes.ps1" />
     <None Include="CouchDBScripts\InsertConnections.ps1" />
     <None Include="CouchDBScripts\InsertStopLocations.ps1" />
+    <None Include="CouchDBScripts\InsertVehicleStatus.ps1" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

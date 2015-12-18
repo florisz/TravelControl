@@ -43,7 +43,7 @@ namespace TravelControl.VehicleClient
                 var departure = _route.Departures[_currentLocationIndex];
                 if (TimeProvider.CurrentTime >= departure.PlannedArrivalTime)
                 {
-                    WriteLine("Vehicle {0} arrived at {1}", VehicleId, TimeProvider.CurrentTime);
+                    //WriteLine("Vehicle {0} arrived at {1}", VehicleId, TimeProvider.CurrentTime);
 
                     SendClientMessage(departure, VehicleStatusEnum.Arrive);
 
@@ -58,7 +58,7 @@ namespace TravelControl.VehicleClient
                 }
                 if (departure.PlannedDepartureTime.HasValue && TimeProvider.CurrentTime >= departure.PlannedDepartureTime.Value)
                 {
-                    WriteLine("Vehicle {0} departed at {1}", VehicleId, TimeProvider.CurrentTime);
+                    //WriteLine("Vehicle {0} departed at {1}", VehicleId, TimeProvider.CurrentTime);
 
                     SendClientMessage(departure, VehicleStatusEnum.Depart);
 
