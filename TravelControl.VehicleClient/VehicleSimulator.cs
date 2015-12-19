@@ -21,7 +21,6 @@ namespace TravelControl.VehicleClient
 
         private readonly Route _route;
         private readonly IActorRef _vehicleClient;
-        private int _currentLocationIndex;
 
         public VehicleSimulator(IActorRef client, Route route, int vehicleId)
         {
@@ -31,44 +30,44 @@ namespace TravelControl.VehicleClient
             HasEnded = false;
             _vehicleClient = client;
             _route = route;
-            _currentLocationIndex = 0;
         }
 
         public void SimulateRoute()
         {
-            var changes = true;
-            while (changes && _currentLocationIndex < _route.Departures.Count)
+            var index = 0;
+            while (index < _route.Departures.Count)
             {
-                changes = false;
-                var departure = _route.Departures[_currentLocationIndex];
+                var departure = _route.Departures[index];
                 if (TimeProvider.CurrentTime >= departure.PlannedArrivalTime)
                 {
-                    //WriteLine("Vehicle {0} arrived at {1}", VehicleId, TimeProvider.CurrentTime);
-
-                    SendClientMessage(departure, VehicleStatusEnum.Arrive);
-
-                    changes = true;
-
-                    // is vehicle arrived on last location of the route?
-                    if (_currentLocationIndex == _route.Departures.Count - 1)
+                    // Vehicle arrived at the current departure?
+                    if (!departure.ActualArrivalTime.HasValue)
                     {
-                        HasEnded = true;
-                        return;
+                        //WriteLine("Vehicle {0} arrived at {1}", VehicleId, TimeProvider.CurrentTime);
+                        departure.ActualArrivalTime = TimeProvider.CurrentTime;
+                        SendClientMessage(departure, VehicleStatusEnum.Arrive);
+
+                        // has vehicle arrived on last location of the route?
+                        if (index == _route.Departures.Count - 1)
+                        {
+                            HasEnded = true;
+                            return;
+                        }
                     }
                 }
                 if (departure.PlannedDepartureTime.HasValue && TimeProvider.CurrentTime >= departure.PlannedDepartureTime.Value)
                 {
-                    //WriteLine("Vehicle {0} departed at {1}", VehicleId, TimeProvider.CurrentTime);
+                    // Vehicle departs from the current departure?
+                    if (!departure.ActualDepartureTime.HasValue)
+                    {
+                        //WriteLine("Vehicle {0} departed at {1}", VehicleId, TimeProvider.CurrentTime);
 
-                    SendClientMessage(departure, VehicleStatusEnum.Depart);
-
-                    changes = true;
+                        departure.ActualDepartureTime = TimeProvider.CurrentTime;
+                        SendClientMessage(departure, VehicleStatusEnum.Depart);
+                    }
                 }
 
-                if (changes)
-                {
-                    _currentLocationIndex++;
-                }
+                index++;
             }
         }
 
@@ -94,7 +93,7 @@ namespace TravelControl.VehicleClient
             {
                 Location = departure.FromLocation.LocationId,
                 VehicleId = VehicleId.ToString(),
-                RouteId = _route._id,
+                RouteId = _route.Id,
                 Status = status,
                 Time = TimeProvider.CurrentTime,
             });
