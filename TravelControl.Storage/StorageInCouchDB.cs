@@ -36,9 +36,10 @@ namespace TravelControl.Storage
         #endregion
 
         #region Route functions
-        public IEnumerable<RouteEntity> GetRoutes(string departureTime)
+
+        public IEnumerable<string> GetIds()
         {
-            return GetRoutes(departureTime, departureTime);
+            return GetAllIds("Routes", "AllById");
         }
 
         public RouteEntity GetRoute(string id)
@@ -46,6 +47,11 @@ namespace TravelControl.Storage
             var response = _client.Documents.GetAsync(id).Result;
 
             return _client.Serializer.Deserialize<RouteEntity>(response.Content);
+        }
+
+        public IEnumerable<RouteEntity> GetRoutes(string departureTime)
+        {
+            return GetRoutes(departureTime, departureTime);
         }
 
         public IEnumerable<RouteEntity> GetRoutes(string departureTimeFrom, string departureTimeTo)
@@ -156,6 +162,22 @@ namespace TravelControl.Storage
                 //Do something with your entity.
                 var entity = Deserialize<T>(row.IncludedDoc);
                 list.Add(entity);
+            }
+
+            return list;
+        }
+
+        private IEnumerable<string> GetAllIds(string viewId, string viewName)
+        {
+            var request = new QueryViewRequest(viewId, viewName)
+                .Configure(c => c.IncludeDocs(false));
+
+            var viewResponse = _client.Views.QueryAsync(request).Result;
+
+            var list = new List<string>();
+            foreach (var row in viewResponse.Rows)
+            {
+                list.Add(row.Id);
             }
 
             return list;

@@ -50,6 +50,18 @@ akka {
             Console.ReadLine();
 
             // TESTING
+            RunTests();
+            // END OF TESTING
+
+            var daySimulator = new DaySimulator();
+            using (var system = ActorSystem.Create("VehicleClient", config))
+            {
+                daySimulator.SimulateOneDay(system);
+            }
+        }
+
+        private static void RunTests()
+        {
             //var storage = COM.ServiceLocator.Instance.Resolve<IStorage>();
             //var locations = storage.GetAllStopLocations();
             //var connections = storage.GetAllConnections();
@@ -61,15 +73,10 @@ akka {
             //    route._rev = storage.SaveRoute(route);
             //}
             //DatabaseTestAsync();
+            //AssignCodeToRoute();
             //Console.ReadLine();
-            // END OF TESTING
-
-            var daySimulator = new DaySimulator();
-            using (var system = ActorSystem.Create("VehicleClient", config))
-            {
-                daySimulator.SimulateOneDay(system);
-            }
         }
+
 
         private static void DatabaseTest()
         {
@@ -158,6 +165,52 @@ akka {
             Task.WaitAll(taskList.ToArray());
             var totalSaves = taskList.Sum(t => t.Result);
             Console.WriteLine($"Total elapsed time total test : {totalSaves} in {timer.Elapsed}");
+        }
+
+        private static void AssignCodeToRoute()
+        {
+            var routes = COM.ServiceLocator.Instance.Resolve<IRoutes>();
+
+            var code = 0;
+            var routeIds = routes.GetIds().ToArray();
+            var allRoutes = routeIds.Select(routeId => routes.Get(routeId)).ToList();
+
+            for (int idx = 0; idx < routeIds.Length; idx++)
+            {
+                Console.WriteLine($"Index={idx} from {routeIds.Length}; Code={code}");
+                var route = allRoutes.ElementAt(idx);
+                if (route.Code == null)
+                {
+                    route.Code = code.ToString("D6");
+                    code++;
+
+                    UpdateRoutesWithSameStops(route, idx + 1, allRoutes, routes);
+                }
+            }
+
+            allRoutes.ForEach(r =>
+            {
+                routes.Save(r);
+                Console.WriteLine($"Route with id {r.Id} is saved");
+            });
+        }
+
+        /// <summary>
+        /// Used to find routes with equal stops
+        /// </summary>
+        private static void UpdateRoutesWithSameStops(Route currentRoute, int indexFrom, List<Route> allRoutes, IRoutes routes)
+        {
+            for (var idx = indexFrom; idx < allRoutes.Count; idx++)
+            {
+                var route = allRoutes.ElementAt(idx);
+                if (route.Code == null)
+                {
+                    if (route.HasSameDepartures(currentRoute))
+                    {
+                        route.Code = currentRoute.Code;
+                    }
+                }
+            }
         }
 
         private static int ProcessOneMinute(IRoutes routes, int hour, int minute)

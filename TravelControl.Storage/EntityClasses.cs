@@ -18,6 +18,7 @@ namespace TravelControl.Storage
         public string RouteId { get; set; }
         public bool Started { get; set; }
         public bool Finished { get; set; }
+        public string Code { get; set; }
         public DepartureEntities Departures { get; set; }
 
         public string _id { get; set; }

@@ -1,4 +1,4 @@
 ﻿./InsertConnections
-.InsertStopLocations
+./InsertStopLocations
 ./InsertRoutes
 ./InsertVehicleStatus

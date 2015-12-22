@@ -809,6 +809,12 @@ namespace TravelControl.Storage
         #endregion
 
         #region Route functions
+
+        public IEnumerable<string> GetIds()
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<RouteEntity> GetRoutes(string departureTime)
         {
             return AllRoutes.Where(r => r.Departures[0].PlannedDepartureTime == departureTime);

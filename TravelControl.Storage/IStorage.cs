@@ -13,6 +13,7 @@ namespace TravelControl.Storage
 
         // Route interface is somewhat more complex because we can't get the list in memory (too big)
         RouteEntity GetRoute(string id);
+        IEnumerable<string> GetIds();
         IEnumerable<RouteEntity> GetRoutes(string departureTime);
         IEnumerable<RouteEntity> GetRoutes(string departureTimeFrom, string departureTimeTo);
         Task<string> SaveRoute(RouteEntity route);

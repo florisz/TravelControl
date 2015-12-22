@@ -20,6 +20,7 @@ namespace TravelControl.Domain
         public string Id { get; set; }
         public bool Started { get; set; }
         public bool Finished { get; set; }
+        public string Code { get; set; }
         // Departure time of route is departure of first element because they're alwasy sorted
         public TimeSpan StartTime
         {
@@ -38,6 +39,24 @@ namespace TravelControl.Domain
         public List<Departure> Departures;
         public string _id { get; set; }
         public string _rev { get; set; }
+
+        public bool HasSameDepartures(Route otherRoute)
+        {
+            if (Departures == null && otherRoute.Departures == null)
+                return true;
+            if (Departures == null || otherRoute.Departures == null)
+                return false;
+            if (Departures.Count != otherRoute.Departures.Count)
+                return false;
+
+            for (var idx = 0; idx < Departures.Count; idx++)
+            {
+                if (Departures[idx].FromLocation != otherRoute.Departures[idx].FromLocation)
+                    return false;
+            }
+
+            return true;
+        }
     }
 
     public class Departure

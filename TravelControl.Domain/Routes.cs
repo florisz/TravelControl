@@ -22,6 +22,11 @@ namespace TravelControl.Domain
             return ConvertToRoute(_storage.GetRoute(id));
         }
 
+        public IEnumerable<string> GetIds()
+        {
+            return _storage.GetIds();
+        }
+
         public IEnumerable<Route> Get(TimeSpan departureTime)
         {
             var routeEntities = _storage.GetRoutes(TimeSpanToString(departureTime));
@@ -90,6 +95,7 @@ namespace TravelControl.Domain
                 Id = routeEntity.RouteId,
                 Started = routeEntity.Started,
                 Finished = routeEntity.Finished,
+                Code = routeEntity.Code,
                 Departures = departures
             };
 
@@ -123,6 +129,7 @@ namespace TravelControl.Domain
                 RouteId = route.Id,
                 Finished = route.Finished,
                 Started = route.Started,
+                Code = route.Code,
                 Departures = departures
             };
 
