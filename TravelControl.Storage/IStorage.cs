@@ -14,12 +14,14 @@ namespace TravelControl.Storage
         // Route interface is somewhat more complex because we can't get the list in memory (too big)
         RouteEntity GetRoute(string id);
         IEnumerable<string> GetIds();
-        IEnumerable<RouteEntity> GetRoutes(string departureTime);
-        IEnumerable<RouteEntity> GetRoutes(string departureTimeFrom, string departureTimeTo);
+        IEnumerable<RouteEntity> GetRoutesByCode(string code);
+        IEnumerable<RouteEntity> GetRoutesByDepartureTime(string time);
+        IEnumerable<RouteEntity> GetRoutesByDepartureTime(string timeFrom, string timeTo);
+        IEnumerable<VehicleStatusEntity> GetVehicleStatusesByRouteId(string routeId);
         Task<string> SaveRoute(RouteEntity route);
         int GetActiveRouteCount();
 
-        List<VehicleStatusEntity> GetStatus(string vehicleId);
+        List<VehicleStatusEntity> GetStatus(string routeId);
         Task SaveStatus(VehicleStatusEntity vehicleStatusEntity);
         void DeleteAllStatusDocuments();
     }

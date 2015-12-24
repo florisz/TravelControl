@@ -22,6 +22,12 @@ namespace TravelControl.Domain
             return ConvertToRoute(_storage.GetRoute(id));
         }
 
+        public IEnumerable<Route> GetByCode(string code)
+        {
+            var routeEntities = _storage.GetRoutesByCode(code);
+            return ConvertRouteEntityList(routeEntities);
+        }
+
         public IEnumerable<string> GetIds()
         {
             return _storage.GetIds();
@@ -29,13 +35,13 @@ namespace TravelControl.Domain
 
         public IEnumerable<Route> Get(TimeSpan departureTime)
         {
-            var routeEntities = _storage.GetRoutes(TimeSpanToString(departureTime));
+            var routeEntities = _storage.GetRoutesByDepartureTime(TimeSpanToString(departureTime));
             return ConvertRouteEntityList(routeEntities);
         }
 
         public IEnumerable<Route> Get(TimeSpan departureTimeFrom, TimeSpan departureTimeTo)
         {
-            var routeEntities = _storage.GetRoutes(TimeSpanToString(departureTimeFrom), TimeSpanToString(departureTimeTo));
+            var routeEntities = _storage.GetRoutesByDepartureTime(TimeSpanToString(departureTimeFrom), TimeSpanToString(departureTimeTo));
             return ConvertRouteEntityList(routeEntities);
         }
 
@@ -43,6 +49,12 @@ namespace TravelControl.Domain
         {
             var revision = await _storage.SaveRoute(ConvertToRouteEntity(route));
             route._rev = revision;
+        }
+
+        public IEnumerable<VehicleStatus> GetVehicleStatuses(string routeId)
+        {
+            var vehicleStatusEntities = _storage.GetVehicleStatusesByRouteId(routeId);
+            return ConvertVehicleStatusEntityList(vehicleStatusEntities);
         }
 
         public void DeleteAllStatusDocuments()
@@ -69,6 +81,17 @@ namespace TravelControl.Domain
             }
 
             return routeList;
+        }
+
+        private IEnumerable<VehicleStatus> ConvertVehicleStatusEntityList(IEnumerable<VehicleStatusEntity> vehicleStatusEntities)
+        {
+            List<VehicleStatus> vehicleStatusList = new List<VehicleStatus>();
+            foreach (var vehicleStatusEntity in vehicleStatusEntities)
+            {
+                vehicleStatusList.Add(ConvertToVehicleStatus(vehicleStatusEntity));
+            }
+
+            return vehicleStatusList;
         }
 
         private Route ConvertToRoute(RouteEntity routeEntity)
@@ -149,6 +172,17 @@ namespace TravelControl.Domain
                 };
         }
 
+        private static VehicleStatus ConvertToVehicleStatus(VehicleStatusEntity statusEntity)
+        {
+            return new VehicleStatus
+            {
+                Status = (VehicleStatusEnum) statusEntity.Status,
+                Location = statusEntity.Location,
+                RouteId = statusEntity.RouteId,
+                Time = StringToTimeSpan(statusEntity.Time).Value,
+                VehicleId = statusEntity.VehicleId
+            };
+        }
         private static string TimeSpanToString(TimeSpan timeSpan)
         {
             return $"{timeSpan.Hours,2:D2}:{timeSpan.Minutes,2:D2}";

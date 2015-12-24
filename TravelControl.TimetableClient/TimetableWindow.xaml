@@ -1,0 +1,36 @@
+﻿<Window x:Class="TravelControl.TimetableClient.TimetableWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TravelControl.TimetableClient"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525" SizeToContent="Width">
+    <Window.Resources>
+        <local:ConfigToDynamicGridViewConverter x:Key="ConfigToDynamicGridViewConverter"></local:ConfigToDynamicGridViewConverter>
+    </Window.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Visible">
+        <!--<ListView Name="TimeTableListView" Width="514">
+            <ListView.View>
+                <GridView AllowsColumnReorder="true" ColumnHeaderToolTip="Authors">
+                    <GridViewColumn Header="Station" Width="120" />
+                    <GridViewColumn Header="A" Width="50" />
+                    <GridViewColumn Header="V" Width="50" />
+                    <GridViewColumn Header="A" Width="50" />
+                    <GridViewColumn Header="V" Width="50" />
+                    <GridViewColumn Header="A" Width="50" />
+                    <GridViewColumn Header="V" Width="50" />
+                    <GridViewColumn Header="A" Width="50" />
+                    <GridViewColumn Header="V" Width="50" />
+                    <GridViewColumn Header="A" Width="50" />
+                    <GridViewColumn Header="V" Width="50" />
+                    <GridViewColumn Header="A" Width="50" />
+                    <GridViewColumn Header="V" Width="50" />
+                    <GridViewColumn Header="A" Width="50" />
+                    <GridViewColumn Header="V" Width="50" />
+                </GridView>
+            </ListView.View>
+        </ListView>-->
+        <ListView ItemsSource="{Binding Routes}" View="{Binding ColumnConfig, Converter={StaticResource ConfigToDynamicGridViewConverter}}"/>
+    </ScrollViewer>
+</Window>

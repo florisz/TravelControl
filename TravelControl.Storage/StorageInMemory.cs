@@ -815,21 +815,31 @@ namespace TravelControl.Storage
             throw new NotImplementedException();
         }
 
-        public IEnumerable<RouteEntity> GetRoutes(string departureTime)
-        {
-            return AllRoutes.Where(r => r.Departures[0].PlannedDepartureTime == departureTime);
-        }
-
         public RouteEntity GetRoute(string id)
         {
             return AllRoutes.FirstOrDefault(r => r.RouteId == id);
         }
 
-        public IEnumerable<RouteEntity> GetRoutes(string departureTimeFrom, string departureTimeTo)
+        public IEnumerable<RouteEntity> GetRoutesByCode(string code)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<RouteEntity> GetRoutesByDepartureTime(string departureTime)
+        {
+            return AllRoutes.Where(r => r.Departures[0].PlannedDepartureTime == departureTime);
+        }
+
+        public IEnumerable<RouteEntity> GetRoutesByDepartureTime(string departureTimeFrom, string departureTimeTo)
         {
             return AllRoutes.Where(r =>
                         string.CompareOrdinal(r.Departures[0].PlannedDepartureTime, departureTimeFrom) >= 0 &&
                         string.CompareOrdinal(r.Departures[0].PlannedDepartureTime, departureTimeTo) <= 0);
+        }
+
+        public IEnumerable<VehicleStatusEntity> GetVehicleStatusesByRouteId(string routeId)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<string> SaveRoute(RouteEntity route)
@@ -852,7 +862,7 @@ namespace TravelControl.Storage
             return AllRoutes.Count(r => r.Started && !r.Finished);
         }
 
-        public List<VehicleStatusEntity> GetStatus(string vehicleId)
+        public List<VehicleStatusEntity> GetStatus(string routeId)
         {
             throw new NotImplementedException();
         }

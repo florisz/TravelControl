@@ -49,24 +49,39 @@ namespace TravelControl.Storage
             return _client.Serializer.Deserialize<RouteEntity>(response.Content);
         }
 
-        public IEnumerable<RouteEntity> GetRoutes(string departureTime)
+        public IEnumerable<RouteEntity> GetRoutesByCode(string key)
         {
-            return GetRoutes(departureTime, departureTime);
+            return GetList<RouteEntity>("Routes", "ByCode", key, key);
         }
 
-        public IEnumerable<RouteEntity> GetRoutes(string departureTimeFrom, string departureTimeTo)
+        public IEnumerable<RouteEntity> GetRoutesByDepartureTime(string key)
         {
-            var request = new QueryViewRequest("Routes", "ByDepartureTime")
-                                    .Configure(query => query.StartKey(departureTimeFrom)
-                                    .EndKey(departureTimeTo)
+            return GetList<RouteEntity>("Routes", "ByDepartureTime", key, key);
+        }
+
+        public IEnumerable<RouteEntity> GetRoutesByDepartureTime(string keyFrom, string keyTo)
+        {
+            return GetList<RouteEntity>("Routes", "ByDepartureTime", keyFrom, keyTo);
+        }
+
+        public IEnumerable<VehicleStatusEntity> GetVehicleStatusesByRouteId(string routeId)
+        {
+            return GetList<VehicleStatusEntity>("VehicleStatus", "ByRoute", routeId, routeId);
+        }
+
+        public IEnumerable<T> GetList<T>(string designDocument, string viewName, string keyFrom, string keyTo)
+        {
+            var request = new QueryViewRequest(designDocument, viewName)
+                                    .Configure(query => query.StartKey(keyFrom)
+                                    .EndKey(keyTo)
                                     .IncludeDocs(true));
 
             var viewResponse = _client.Views.QueryAsync(request).Result;
 
-            var list = new List<RouteEntity>();
+            var list = new List<T>();
             foreach (var row in viewResponse.Rows)
             {
-                var routeEntity = _client.Serializer.Deserialize<RouteEntity>(row.IncludedDoc);
+                var routeEntity = _client.Serializer.Deserialize<T>(row.IncludedDoc);
                 list.Add(routeEntity);
             }
 
