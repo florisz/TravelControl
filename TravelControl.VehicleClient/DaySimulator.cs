@@ -74,7 +74,7 @@ namespace TravelControl.VehicleClient
                     runningVehicles.Remove(vehicleSimulator.VehicleId);
                 }
 
-                System.Threading.Thread.Sleep(1000);
+                //System.Threading.Thread.Sleep(1000);
                 MockTimeProvider.FastForwardBy(new TimeSpan(0, 1, 0));
                 if (MockTimeProvider.CurrentTime == new TimeSpan(0, 0, 0))
                 {

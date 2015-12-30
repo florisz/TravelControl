@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 using Microsoft.Practices.Unity;
 using TravelControl.Common;
 using TravelControl.Domain;
@@ -46,9 +48,12 @@ namespace TravelControl.TimeTableClient
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            //DataContext = ViewModel;
-            ViewModel.Routes.ElementAt(0).Attributes["1"] = "aap noot mies";
-            TimeTableView.ItemsSource = ViewModel.Routes;
+            var routeBinding = new Binding("Routes");
+            var columnBinding = new Binding("ColumnConfig") {Converter = new ConfigToDynamicGridViewConverter()};
+
+            TimeTableView.DataContext = ViewModel;
+            TimeTableView.SetBinding(ItemsControl.ItemsSourceProperty, routeBinding);
+            TimeTableView.SetBinding(ListView.ViewProperty, columnBinding);
         }
     }
 
