@@ -29,8 +29,17 @@ namespace TravelControlService
             }
         }
 
-        public async void Handle(VehicleStatusMessage vehicleStatus, Dictionary<Guid, IActorRef> mapClients, ILoggingAdapter logger)
+        public async void Handle(VehicleStatusMessage vehicleStatus, Dictionary<Guid, IActorRef> mapClients, Dictionary<Guid, TimeTableClient> timeTableClients, ILoggingAdapter logger)
         {
+            // send message as is through to all attached timeTableClients
+            foreach (var client in timeTableClients.Values)
+            {
+                if (vehicleStatus.RouteCode == client.RouteCode)
+                {
+                    client.ClientRef.Tell(vehicleStatus);
+                }
+            }
+
             var vehiclePerLocationNew = _vehiclesPerLocation[vehicleStatus.Location];
             switch (vehicleStatus.Status)
             {

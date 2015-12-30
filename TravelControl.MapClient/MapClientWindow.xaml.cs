@@ -98,19 +98,19 @@ namespace TravelControl.MapClient
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            var viewModelControl = FindVisualChildByName<MapItemsControl>(LayoutRoot, "VehiclesPerLocationItemsControl");
-            if (viewModelControl != null)
-            {
-                var vehiclesPerLocation = new ObservableCollection<VehiclesPerLocation>();
-                foreach (var loc in _listVehiclesPerLocation)
-                {
-                    vehiclesPerLocation.Add(loc);
-                }
-                viewModelControl.ItemsSource = vehiclesPerLocation;
-            }
+            //var viewModelControl = FindVisualChildByName<MapItemsControl>(LayoutRoot, "VehiclesPerLocationItemsControl");
+            //if (viewModelControl != null)
+            //{
+            //    var vehiclesPerLocation = new ObservableCollection<VehiclesPerLocation>();
+            //    foreach (var loc in _listVehiclesPerLocation)
+            //    {
+            //        vehiclesPerLocation.Add(loc);
+            //    }
+            //    viewModelControl.ItemsSource = vehiclesPerLocation;
+            //}
 
-            var vehicleCount = Routes.GetActiveRouteCount();
-            ActiveVehicles.Content = vehicleCount + " vehicles";
+            //var vehicleCount = Routes.GetActiveRouteCount();
+            //ActiveVehicles.Content = vehicleCount + " vehicles";
         }
 
         private void ellipse_MouseLeave(object sender, MouseEventArgs e)

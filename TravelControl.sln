@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TravelControl.Constants", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TravelControl.Common", "TravelControl.Common\TravelControl.Common.csproj", "{D0A39AE7-C8F1-44DC-8760-365D03968D36}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TravelControl.TimetableClient", "TravelControl.TimetableClient\TravelControl.TimetableClient.csproj", "{8DEC8898-9B40-4F79-A6EF-4BCE0AAB1855}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TravelControl.TimeTableClient", "TravelControl.TimetableClient\TravelControl.TimeTableClient.csproj", "{8DEC8898-9B40-4F79-A6EF-4BCE0AAB1855}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

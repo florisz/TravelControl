@@ -7,8 +7,8 @@
     <ProjectGuid>{8DEC8898-9B40-4F79-A6EF-4BCE0AAB1855}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TravelControl.TimetableClient</RootNamespace>
-    <AssemblyName>TravelControl.TimetableClient</AssemblyName>
+    <RootNamespace>TravelControl.TimeTableClient</RootNamespace>
+    <AssemblyName>TravelControl.TimeTableClient</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -35,7 +35,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>TravelControl.TimetableClient.App</StartupObject>
+    <StartupObject>
+    </StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Akka, Version=1.0.4.12, Culture=neutral, processorArchitecture=MSIL">
@@ -106,9 +107,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ConfigToDynamicGridViewConverter.cs" />
-    <Compile Include="ViewModels\Route.cs" />
-    <Page Include="TimetableWindow.xaml">
+    <Compile Include="DynamicGridView\ColumnConfig.cs" />
+    <Compile Include="DynamicGridView\ConfigToDynamicGridViewConverter.cs" />
+    <Compile Include="TimeTableClientActor.cs" />
+    <Compile Include="TimeTableClientListener.cs" />
+    <Compile Include="DynamicGridView\Column.cs" />
+    <Compile Include="VehicleStatusHandler.cs" />
+    <Compile Include="ViewModels\RouteStatusView.cs" />
+    <Page Include="TimeTableWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -116,8 +122,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="TimetableWindow.xaml.cs">
-      <DependentUpon>TimetableWindow.xaml</DependentUpon>
+    <Compile Include="TimeTableWindow.xaml.cs">
+      <DependentUpon>TimeTableWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

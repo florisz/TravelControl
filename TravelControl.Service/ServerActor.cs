@@ -12,7 +12,7 @@ namespace TravelControlService
         TypedActor,
         IHandle<VehicleClientConnectRequest>,
         IHandle<VehicleClientDisconnect>,
-        IHandle<TimeTableClientConnect>,
+        IHandle<TimeTableClientConnectRequest>,
         IHandle<TimeTableClientDisconnect>,
         IHandle<MapClientConnectRequest>,
         IHandle<MapClientDisconnect>,
@@ -20,7 +20,7 @@ namespace TravelControlService
         ILogReceive
     {
         private readonly Dictionary<Guid, IActorRef> _vehicleClients = new Dictionary<Guid, IActorRef>();
-        private readonly Dictionary<Guid, IActorRef> _timetableClients = new Dictionary<Guid, IActorRef>();
+        private readonly Dictionary<Guid, TimeTableClient> _timetableClients = new Dictionary<Guid, TimeTableClient>();
         private readonly Dictionary<Guid, IActorRef> _mapClients = new Dictionary<Guid, IActorRef>();
 
         [Dependency]
@@ -71,16 +71,31 @@ namespace TravelControlService
             }
         }
 
-        public void Handle(TimeTableClientConnect message)
+        public void Handle(TimeTableClientConnectRequest message)
         {
             var logger = Context.GetLogger();
-            logger.Debug("TimeTable client {0} has connected", message.Id);
 
-            if (!_timetableClients.ContainsKey(message.Id))
+            try
             {
-                _timetableClients.Add(message.Id, this.Sender);
+                logger.Debug("TimeTable client {0} has connected", message.Id);
+
+                if (!_timetableClients.ContainsKey(message.Id))
+                {
+                    _timetableClients.Add(message.Id, new TimeTableClient {ClientRef = this.Sender, RouteCode = message.RouteCode });
+                }
+            }
+            catch (Exception ex)
+            {
+                Sender.Tell(new Failure { Exception = ex }, Self);
+                return;
             }
 
+            Sender.Tell(new TimeTableClientConnectResponse
+            {
+                Id = message.Id,
+                RequestOk = true,
+                ServerException = null
+            }, Self);
         }
 
         public void Handle(TimeTableClientDisconnect message)
@@ -135,13 +150,8 @@ namespace TravelControlService
         public void Handle(VehicleStatusMessage message)
         {
             var logger = Context.GetLogger();
-            logger.Debug("Client has send status: vehicle={0}, location={1}, status={2}, time={3}",
-                message.VehicleId,
-                message.Location,
-                message.Status,
-                message.Time);
 
-            StatusHandler.Handle(message, _mapClients, logger);
+            StatusHandler.Handle(message, _mapClients, _timetableClients, logger);
         }
     }
 }

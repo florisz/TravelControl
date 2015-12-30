@@ -4,8 +4,9 @@ using System.Windows;
 using TravelControl.Common;
 using TravelControl.Domain;
 using TravelControl.Storage;
+using TravelControl.TimeTableClient.ViewModels;
 
-namespace TravelControl.TimetableClient
+namespace TravelControl.TimeTableClient
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -23,7 +24,13 @@ namespace TravelControl.TimetableClient
                 container.RegisterType<ITimeProvider, MockTimeProvider>(new PerResolveLifetimeManager());
             });
 
-            var timetable = new TimetableWindow();
+            var routeService = ServiceLocator.Instance.Resolve<IRoutes>();
+            var viewModel = RouteStatusViewModel.Create(routeService, "000003");
+
+            var timeTableClientListener = new TimeTableClientListener(viewModel);
+            Task.Run(() => timeTableClientListener.Run());
+
+            var timetable = new TimeTableWindow(viewModel);
             timetable.Show();
         }
 

@@ -46,8 +46,8 @@ namespace TravelControlService
             var config = ConfigurationFactory.ParseString(@"
 akka {  
     log-config-on-start = off
-    stdout-loglevel = ERROR
-    loglevel = ERROR
+    stdout-loglevel = DEBUG
+    loglevel = DEBUG
     loggers = [""Akka.Logger.NLog.NLogLogger, Akka.Logger.NLog""]
     actor {
         provider = ""Akka.Remote.RemoteActorRefProvider, Akka.Remote""

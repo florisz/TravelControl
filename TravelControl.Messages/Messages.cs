@@ -7,6 +7,7 @@ namespace TravelControl.Messages
     {
         public string VehicleId { get; set; }
         public string RouteId { get; set; }
+        public string RouteCode { get; set; }
         public VehicleStatusEnum Status { get; set; }
         public TimeSpan Time { get; set; }
         public string Location { get; set; }
@@ -52,9 +53,17 @@ namespace TravelControl.Messages
         public Guid Id { get; set; }
     }
 
-    public class TimeTableClientConnect
+    public class TimeTableClientConnectRequest
     {
         public Guid Id { get; set; }
+        public string RouteCode { get; set; } 
+    }
+
+    public class TimeTableClientConnectResponse
+    {
+        public Guid Id { get; set; }
+        public bool RequestOk { get; set; }
+        public Exception ServerException { get; set; }
     }
 
     public class TimeTableClientDisconnect

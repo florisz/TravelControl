@@ -94,6 +94,7 @@ namespace TravelControl.VehicleClient
                 Location = departure.FromLocation.LocationId,
                 VehicleId = VehicleId.ToString(),
                 RouteId = _route.Id,
+                RouteCode = _route.Code,
                 Status = status,
                 Time = TimeProvider.CurrentTime,
             });
