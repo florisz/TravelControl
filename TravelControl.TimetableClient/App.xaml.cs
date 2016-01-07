@@ -1,6 +1,7 @@
 ﻿using Microsoft.Practices.Unity;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Configuration;
 using TravelControl.Common;
 using TravelControl.Domain;
 using TravelControl.Storage;
@@ -25,7 +26,10 @@ namespace TravelControl.TimeTableClient
             });
 
             var routeService = ServiceLocator.Instance.Resolve<IRoutes>();
-            var viewModel = RouteStatusViewModel.Create(routeService, "000003");
+
+            var routeCode = ConfigurationManager.AppSettings["RouteCode"];
+            if (string.IsNullOrEmpty(routeCode)) routeCode = "999999";
+            var viewModel = RouteStatusViewModel.Create(routeService, routeCode);
 
             var timeTableClientListener = new TimeTableClientListener(viewModel);
             Task.Run(() => timeTableClientListener.Run());

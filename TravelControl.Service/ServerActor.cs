@@ -21,7 +21,7 @@ namespace TravelControlService
     {
         private readonly Dictionary<Guid, IActorRef> _vehicleClients = new Dictionary<Guid, IActorRef>();
         private readonly Dictionary<Guid, TimeTableClient> _timetableClients = new Dictionary<Guid, TimeTableClient>();
-        private readonly Dictionary<Guid, IActorRef> _mapClients = new Dictionary<Guid, IActorRef>();
+        private readonly Dictionary<Guid, MapClient> _mapClients = new Dictionary<Guid, MapClient>();
 
         [Dependency]
         public IStatusHandler StatusHandler
@@ -120,7 +120,7 @@ namespace TravelControlService
 
                 if (!_mapClients.ContainsKey(message.Id))
                 {
-                    _mapClients.Add(message.Id, this.Sender);
+                    _mapClients.Add(message.Id, new MapClient { ClientRef = this.Sender, RouteCode = message.RouteCode });
                 }
             }
             catch (Exception ex)

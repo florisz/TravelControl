@@ -47,7 +47,7 @@ namespace TravelControl.MapClient
             //  DispatcherTimer setup
             var dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
             dispatcherTimer.Tick += dispatcherTimer_Tick;
-            dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 50);
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
             dispatcherTimer.Start();
         }
 
@@ -98,19 +98,16 @@ namespace TravelControl.MapClient
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            //var viewModelControl = FindVisualChildByName<MapItemsControl>(LayoutRoot, "VehiclesPerLocationItemsControl");
-            //if (viewModelControl != null)
-            //{
-            //    var vehiclesPerLocation = new ObservableCollection<VehiclesPerLocation>();
-            //    foreach (var loc in _listVehiclesPerLocation)
-            //    {
-            //        vehiclesPerLocation.Add(loc);
-            //    }
-            //    viewModelControl.ItemsSource = vehiclesPerLocation;
-            //}
-
-            //var vehicleCount = Routes.GetActiveRouteCount();
-            //ActiveVehicles.Content = vehicleCount + " vehicles";
+            var viewModelControl = FindVisualChildByName<MapItemsControl>(LayoutRoot, "VehiclesPerLocationItemsControl");
+            if (viewModelControl != null)
+            {
+                var vehiclesPerLocation = new ObservableCollection<VehiclesPerLocation>();
+                foreach (var loc in _listVehiclesPerLocation)
+                {
+                    vehiclesPerLocation.Add(loc);
+                }
+                viewModelControl.ItemsSource = vehiclesPerLocation;
+            }
         }
 
         private void ellipse_MouseLeave(object sender, MouseEventArgs e)

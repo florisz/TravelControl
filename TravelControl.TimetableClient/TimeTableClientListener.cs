@@ -55,7 +55,6 @@ akka {
 
         private static IActorRef ConnectToTravelControlServer(ActorSystem system, RouteStatusViewModel viewModel)
         {
-            //actorSystem.ActorOf(Props.Create(() => new MainGithubRepoActor()), "ReporeadingActor");
             var timeTableClient = system.ActorOf(Props.Create<TimeTableClientActor>(viewModel));
             system.ActorSelection(GlobalConstant.TravelControlServerUrl);
             timeTableClient.Tell(new TimeTableClientConnectRequest { Id = Guid.NewGuid(), RouteCode = viewModel.RouteCode });

@@ -16,20 +16,14 @@ namespace TravelControlService
 
     public class StatusHandler : IStatusHandler
     {
-        private readonly Dictionary<string, VehiclesPerLocation> _vehiclesPerLocation;
         private readonly IRoutes _routes;
 
         public StatusHandler(IStopLocations stopLocations, IRoutes routes)
         {
             _routes = routes;
-            _vehiclesPerLocation = new Dictionary<string, VehiclesPerLocation>();
-            foreach (var location in stopLocations.All.Values)
-            {
-                _vehiclesPerLocation.Add(location.LocationId, new VehiclesPerLocation { StopLocation = location, Count = 0 });
-            }
         }
 
-        public async void Handle(VehicleStatusMessage vehicleStatus, Dictionary<Guid, IActorRef> mapClients, Dictionary<Guid, TimeTableClient> timeTableClients, ILoggingAdapter logger)
+        public async void Handle(VehicleStatusMessage vehicleStatus, Dictionary<Guid, MapClient> mapClients, Dictionary<Guid, TimeTableClient> timeTableClients, ILoggingAdapter logger)
         {
             // send message as is through to all attached timeTableClients
             foreach (var client in timeTableClients.Values)
@@ -40,49 +34,16 @@ namespace TravelControlService
                 }
             }
 
-            var vehiclePerLocationNew = _vehiclesPerLocation[vehicleStatus.Location];
-            switch (vehicleStatus.Status)
+            // send message as is through to all attached MapClients
+            foreach (var client in mapClients.Values)
             {
-                case VehicleStatusEnum.StartRoute:
-                    // increment the number of vehicles on this location
-                    vehiclePerLocationNew.Count++;
-
-                    // send new status to all attached mapClients
-                    foreach (var client in mapClients.Values)
-                    {
-                        client.Tell(new LocationStatusMessage { Location = vehiclePerLocationNew.StopLocation.LocationId, VehicleCount = vehiclePerLocationNew.Count });
-                    }
-
-                    await SaveRoute(vehicleStatus);
-                    break;
-                case VehicleStatusEnum.EndRoute:
-                    // decrement the number of vehicles on this location
-                    vehiclePerLocationNew.Count--;
-
-                    // send status to all attached mapClients
-                    foreach (var client in mapClients.Values)
-                    {
-                        client.Tell(new LocationStatusMessage { Location = vehiclePerLocationNew.StopLocation.LocationId, VehicleCount = vehiclePerLocationNew.Count });
-                    }
-
-                    await SaveRoute(vehicleStatus);
-                    break;
-                case VehicleStatusEnum.Depart:
-                    await SaveRoute(vehicleStatus);
-                    break;
-                case VehicleStatusEnum.Arrive:
-                    // increment the number of vehicles on the new location
-                    vehiclePerLocationNew.Count++;
-
-                    // send status to all attached mapClients
-                    foreach (var client in mapClients.Values)
-                    {
-                        client.Tell(new LocationStatusMessage { Location = vehiclePerLocationNew.StopLocation.LocationId, VehicleCount = vehiclePerLocationNew.Count });
-                    }
-
-                    await SaveRoute(vehicleStatus);
-                    break;
+                if (vehicleStatus.RouteCode == client.RouteCode)
+                {
+                    client.ClientRef.Tell(vehicleStatus);
+                }
             }
+
+            await SaveRoute(vehicleStatus);
         }
 
 

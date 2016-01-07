@@ -1,5 +1,6 @@
 ﻿using Akka.Actor;
 using Akka.Configuration;
+using System;
 using System.Collections.Generic;
 using TravelControl.Constants;
 using TravelControl.MapClient.ViewModels;
@@ -11,10 +12,12 @@ namespace TravelControl.MapClient
     {
         private IActorRef _mapClient;
         List<VehiclesPerLocation> _vehiclesPerLocation;
+        string _routeCode;
 
-        public MapClientListener()
+        public MapClientListener(string routeCode)
         {
             _vehiclesPerLocation = new List<VehiclesPerLocation>();
+            _routeCode = routeCode;
         }
 
         public void Run()
@@ -47,11 +50,11 @@ akka {
             get { return _vehiclesPerLocation; }
         }
         
-        private static IActorRef ConnectToTravelControlServer(ActorSystem system, List<VehiclesPerLocation> vehiclesPerLocation)
+        private IActorRef ConnectToTravelControlServer(ActorSystem system, List<VehiclesPerLocation> vehiclesPerLocation)
         {
             var mapClient = system.ActorOf(Props.Create<MapClientActor>(vehiclesPerLocation));
             system.ActorSelection(GlobalConstant.TravelControlServerUrl);
-            mapClient.Tell(new MapClientConnectRequest());
+            mapClient.Tell(new MapClientConnectRequest { Id = Guid.NewGuid(), RouteCode = _routeCode });
 
             return mapClient;
         }

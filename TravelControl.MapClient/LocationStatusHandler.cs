@@ -16,34 +16,56 @@ namespace TravelControl.MapClient
             _stopLocations = stopLocations;
         }
 
-        public void Handle(LocationStatusMessage message, List<VehiclesPerLocation> vehiclesPerLocation)
+        public void Handle(VehicleStatusMessage message, List<VehiclesPerLocation> vehiclesPerLocation)
         {
             // try to find the item in the view model
             var location = vehiclesPerLocation.Where(l => l.LocationId == message.Location).FirstOrDefault();
-            if (message.VehicleCount > 0)
+            switch (message.Status)
             {
-                if (location == null)
-                {
-                    // add to the view model
-                    var stopLocation = _stopLocations.All[message.Location];
-                    vehiclesPerLocation.Add(new VehiclesPerLocation
+                case VehicleStatusEnum.Arrive:
+                    if (location == null)
                     {
-                        Count = message.VehicleCount,
-                        LocationId = message.Location,
-                        Location = new Location() { Latitude = stopLocation.Lattitude, Longitude = stopLocation.Longitude },
-                    });
-                }
-                else
-                {
-                    // update the count in the view model
-                    location.Count = message.VehicleCount;
-                }
+                        // add to the view model; can only occur if Arrive is handled before the StartRoute
+                        vehiclesPerLocation.Add(CreateNewVehiclesPerLocation(message, vehiclesPerLocation));
+                    }
+                    else
+                    {
+                        location.Count++;
+                    }
+                    break;
+                case VehicleStatusEnum.Depart:
+                    // location can not be null unless messages arrive in different order
+                    // do nothing because creating a new one and substracting with 1 is equivalent to doing nothing
+                    if (location != null)
+                    {
+                        location.Count--;
+                        if (location.Count == 0)
+                        {
+                            // delete from the view model
+                            vehiclesPerLocation.Remove(location);
+                        }
+                    }
+                    break;
+                case VehicleStatusEnum.EndRoute:
+                    if (location != null)
+                    {
+                        // delete from the view model
+                        vehiclesPerLocation.Remove(location);
+                    }
+                    break;
             }
-            else
+        }
+
+        private VehiclesPerLocation CreateNewVehiclesPerLocation(VehicleStatusMessage message, List<VehiclesPerLocation> vehiclesPerLocation)
+        {
+            var stopLocation = _stopLocations.All[message.Location];
+            return new VehiclesPerLocation
             {
-                // delete from the view model
-                vehiclesPerLocation.Remove(location);
-            }
+                Count = 1,
+                LocationId = message.Location,
+                Location = new Location() { Latitude = stopLocation.Lattitude, Longitude = stopLocation.Longitude },
+            };
+
         }
     }
 }

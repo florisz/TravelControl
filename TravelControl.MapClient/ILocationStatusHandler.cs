@@ -6,6 +6,6 @@ namespace TravelControl.MapClient
 {
     public interface ILocationStatusHandler
     {
-        void Handle(LocationStatusMessage message, List<VehiclesPerLocation> vehiclesPerLocation);
+        void Handle(VehicleStatusMessage message, List<VehiclesPerLocation> vehiclesPerLocation);
     }
 }

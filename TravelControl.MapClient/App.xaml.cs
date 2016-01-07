@@ -1,4 +1,5 @@
 ﻿using Microsoft.Practices.Unity;
+using System.Configuration;
 using System.Threading.Tasks;
 using System.Windows;
 using TravelControl.Common;
@@ -24,7 +25,10 @@ namespace TravelControl.MapClient
                 container.RegisterType<ILocationStatusHandler, LocationStatusHandler>(new ContainerControlledLifetimeManager());
             });
 
-            var mapClientListener = new MapClientListener();
+            var routeCode = ConfigurationManager.AppSettings["RouteCode"];
+            if (string.IsNullOrEmpty(routeCode)) routeCode = "999999";
+
+            var mapClientListener = new MapClientListener(routeCode);
             Task.Run(() => mapClientListener.Run());
             
             var mapClient = new MapClientWindow(mapClientListener.VehiclesPerLocation);

@@ -12,7 +12,7 @@ namespace TravelControl.MapClient
     class MapClientActor : TypedActor,
         IHandle<MapClientConnectRequest>,
         IHandle<MapClientConnectResponse>,
-        IHandle<LocationStatusMessage>,
+        IHandle<VehicleStatusMessage>,
         ILogReceive
     {
         private readonly ActorSelection _server = Context.ActorSelection(GlobalConstant.TravelControlServerUrl);
@@ -52,12 +52,9 @@ namespace TravelControl.MapClient
             _connected = true;
         }
 
-        public void Handle(LocationStatusMessage message)
+        public void Handle(VehicleStatusMessage message)
         {
-            if (_connected)
-            {
-                LocationStatusHandler.Handle(message, _vehiclesPerLocation);
-            }
+            LocationStatusHandler.Handle(message, _vehiclesPerLocation);
         }
 
     }

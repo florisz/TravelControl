@@ -39,6 +39,7 @@ namespace TravelControl.Messages
     public class MapClientConnectRequest
     {
         public Guid Id { get; set; }
+        public string RouteCode { get; set; }
     }
 
     public class MapClientConnectResponse
